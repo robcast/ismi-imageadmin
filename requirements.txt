@@ -1,0 +1,15 @@
+Django==1.4.2
+South==0.7.6
+Werkzeug==0.8.3
+amqplib==1.0.2
+anyjson==0.3.3
+billiard==2.7.3.17
+celery==3.0.11
+django-celery==3.0.11
+django-extensions==1.0.0
+ipython==0.13.1
+kombu==2.4.7
+psycopg2==2.4.5
+python-dateutil==1.5
+pytz==2012g
+wsgiref==0.1.2

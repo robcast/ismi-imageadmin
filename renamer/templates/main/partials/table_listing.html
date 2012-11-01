@@ -1,0 +1,17 @@
+<table class="table table-bordered table-striped table-hover">
+    <thead>
+        <tr>
+            <td></td>
+            <td>Folder Name</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for fn in filenames %}
+            <tr>
+                <td><input type="checkbox" /></td>
+                <td>{{ fn }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<button class="btn btn-primary">Process</button>
