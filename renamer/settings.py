@@ -18,6 +18,10 @@ MANAGERS = ADMINS
 # In a Windows environment this must be set to your system time zone.
 TIME_ZONE = 'America/Montreal'
 
+import warnings
+import exceptions
+warnings.filterwarnings("ignore", category=exceptions.RuntimeWarning, module='django.db.backends.sqlite3', lineno=50)
+
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'

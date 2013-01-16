@@ -14,18 +14,21 @@ DATABASES = {
 ARCHIVE_LOCATION = "/Users/ahankins/Documents/code/git/renamer/testing/data1"
 INCOMING_LOCATION = "/Users/ahankins/Documents/code/git/renamer/testing/data3/incoming"
 DIVA_LOCATION = "/Users/ahankins/Documents/code/git/renamer/testing/data7/srv/images"
+TMPDIR = "/Users/ahankins/.tmp"
+
 
 PATH_TO_GS = "/usr/local/bin/gs"
 PATH_TO_VIPS = "/usr/local/bin/vips"
 PATH_TO_SHASUM = "/usr/bin/shasum"
+PATH_TO_KDU = "/usr/local/bin/kdu_compress"
+PATH_TO_GM = "/usr/local/bin/gm"
+PATH_TO_IM = "/usr/local/bin/convert"
 
 
 djcelery.setup_loader()
-BROKER_HOST = "localhost"
-BROKER_PORT = 5672
-BROKER_USER = "guest"
-BROKER_PASSWORD = "guest"
-BROKER_VHOST = "ISMI"
+CELERY_IMPORTS = ("renamer.helpers.to_archive",
+                    "renamer.helpers.to_diva")
+BROKER_URL = "amqp://guest@localhost:5672//"
 TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
 
 CELERY_RESULT_BACKEND = "database"
