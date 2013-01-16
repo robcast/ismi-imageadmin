@@ -25,7 +25,7 @@ base_urlpatterns += patterns('renamer.views.main',
 base_urlpatterns += staticfiles_urlpatterns()
 
 urlpatterns = patterns('',
-        r'^imageadmin/', include(base_urlpatterns)
+        url(r'^imageadmin/', include(base_urlpatterns))
     )
 # urlpatterns = patterns('',
     # Examples:
