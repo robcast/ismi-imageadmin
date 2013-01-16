@@ -32,17 +32,17 @@ def convert_to_diva(indir):
 
         # some tiff files are corrupted, causing KDU to bail.
         # We'll take the safe route and convert all files, TIFF or not.
-        tempfile = os.path.join(tdir, "{0}.tiff".format(name))
+        tfile = os.path.join(tdir, "{0}.tiff".format(name))
 
         subprocess.call([settings.PATH_TO_VIPS,
                             "im_copy",
                             image,
-                            tempfile])
+                            tfile])
 
         output_file = os.path.join(out_path, "{0}.jp2".format(name))
 
         subprocess.call([settings.PATH_TO_KDU,
-                            "-i", tempfile,
+                            "-i", tfile,
                             "-o", output_file,
                             "-quiet",
                             "-num_threads", "1",
