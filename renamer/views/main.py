@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.conf import settings
-from renamer.helpers.directoryinfo import list_directory, check_difference, check_intersection
+from renamer.helpers.directoryinfo import list_directory, check_difference, check_intersection, alphanum_key
 from renamer.helpers.to_archive import move_to_archive
 from renamer.helpers.to_diva import convert_to_diva
 from renamer.forms.login import LoginForm
@@ -10,7 +10,7 @@ import shutil
 import os
 
 
-@login_required(login_url="/login/")
+@login_required(login_url="/imageadmin/login/")
 def home(request):
     archive_dirs = list_directory(settings.ARCHIVE_LOCATION)
     diva_dirs = list_directory(settings.DIVA_LOCATION)
@@ -34,7 +34,7 @@ def home(request):
     return render(request, "main/home.html", data)
 
 
-@login_required(login_url='/login/')
+@login_required(login_url='/imageadmin/login/')
 def manage(request):
     archive_dirs = list_directory(settings.ARCHIVE_LOCATION)
     incoming_dirs = list_directory(settings.INCOMING_LOCATION)
@@ -43,6 +43,10 @@ def manage(request):
     incoming_to_archive = check_difference(incoming_dirs, archive_dirs)
     archive_to_diva = check_difference(archive_dirs, diva_dirs)
     diva_redo = check_intersection(archive_dirs, diva_dirs)
+
+    incoming_to_archive.sort(key=alphanum_key)
+    archive_to_diva.sort(key=alphanum_key)
+    diva_redo.sort(key=alphanum_key)
 
     data = {
         'to_archive': incoming_to_archive,
@@ -53,7 +57,7 @@ def manage(request):
     return render(request, 'main/manage.html', data)
 
 
-@login_required(login_url='/login/')
+@login_required(login_url='/imageadmin/login/')
 def to_archive(request):
     filenames = request.POST.getlist('to_archive_chk')
     absolute_filenames = [os.path.join(settings.INCOMING_LOCATION, f) for f in filenames]
@@ -62,7 +66,7 @@ def to_archive(request):
     return redirect("home")
 
 
-@login_required(login_url='/login/')
+@login_required(login_url='/imageadmin/login/')
 def to_diva(request):
     filenames = request.POST.getlist('to_diva_chk')
     absolute_filenames = [os.path.join(settings.ARCHIVE_LOCATION, f) for f in filenames]
@@ -71,7 +75,7 @@ def to_diva(request):
     return redirect("home")
 
 
-@login_required(login_url='/login/')
+@login_required(login_url='/imageadmin/login/')
 def diva_redo(request):
     filenames = request.POST.getlist('redo_diva_chk')
     old_filenames = [os.path.join(settings.DIVA_LOCATION, f) for f in filenames]
