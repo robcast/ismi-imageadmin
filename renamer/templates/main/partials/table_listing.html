@@ -1,17 +1,17 @@
 <table class="table table-bordered table-striped table-hover">
     <thead>
         <tr>
-            <td></td>
-            <td>Folder Name</td>
+            <th></th>
+            <th>Folder Name</th>
         </tr>
     </thead>
     <tbody>
         {% for fn in filenames %}
             <tr>
-                <td><input type="checkbox" /></td>
-                <td>{{ fn }}</td>
+                <td><input type="checkbox" value="{{ fn }}" id="{{ fn }}" name="{{ group_name }}"/></td>
+                <td><label for="{{ fn }}">{{ fn }}</label></td>
             </tr>
         {% endfor %}
     </tbody>
 </table>
-<button class="btn btn-primary">Process</button>
+<input type="submit" value="Submit" class="btn btn-primary" />

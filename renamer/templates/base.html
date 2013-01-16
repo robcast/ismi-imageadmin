@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-
+    <script src="{{ STATIC_URL }}js/jquery.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
     <!-- Le styles -->
     <link href="{{ STATIC_URL }}css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -35,9 +36,8 @@
           <a class="brand" href="#">ISMI Management Console</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-              <li class="active"><a href="#">Home</a></li>
-              <li><a href="#about">About</a></li>
-              <li><a href="#contact">Contact</a></li>
+              <li><a href="/">Home</a></li>
+              <li><a href="/manage">Manage</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
@@ -45,15 +45,20 @@
     </div>
 
     <div class="container">
-    {% block content %}
+      {% if message %}
+        <div class="alert alert-success">
+          {{ message }}
+        </div>
+      {% endif %}
 
-    {% endblock %}
+      {% if alert %}
+        <div class="alert alert-error">
+          {{ alert }}
+        </div>
+      {% endif %}
+
+      {% block content %}
+      {% endblock %}
     </div> <!-- /container -->
-
-    <!-- Le javascript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="{{ STATIC_URL }}js/jquery.js"></script>
-    <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
   </body>
 </html>
