@@ -45,7 +45,6 @@ def convert_to_diva(indir):
                             "-i", tfile,
                             "-o", output_file,
                             "-quiet",
-                            "-num_threads", "1",
                             "Clevels=5",
                             "Creversible=yes",
                             "-rate", "-,1,0.5,0.25",
