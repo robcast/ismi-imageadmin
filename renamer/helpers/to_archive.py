@@ -133,19 +133,9 @@ def __csum_file(filename):
         sys.stdout.flush()
         raise(Exception)  # gettin' outta dodge
 
-    res = retcode.stdout.read().strip().split("  ")
+    output = retcode.communicate()
+    res = output[0].read().strip().split("  ")
     return res[0]
-
-    # m = hashlib.sha1()  # == 'hashlib.md5' or 'hashlib.sha1'
-    # blocksize = 0x10000
-
-    # fd = open(filename, 'rb')
-    # try:
-    #     contents = iter(lambda: fd.read(blocksize), "")
-    #     _ = [m.update(f) for f in contents]
-    # finally:
-    #     fd.close()
-    # return m.hexdigest()
 
 
 def __clean_dirname(msdir):
