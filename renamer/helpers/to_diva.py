@@ -49,10 +49,6 @@ def convert_to_diva(indir):
                             "Clayers=2",
                             "Creversible=yes",
                             'Corder="RPCL"',
-                            'ORGgen_plt="yes"',
-                            '"Cprecincts={256,256},{256,256},{128,128}"',
-                            '"Cblk={64,64}"',
-                            '"ORGtparts=R"',
                             "-rate", "-,0.5",
                         ])
     shutil.rmtree(tdir)
