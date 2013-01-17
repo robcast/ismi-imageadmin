@@ -25,7 +25,15 @@ def convert_to_diva(indir):
     images = [os.path.join(pgimg_path, f) for f in os.listdir(pgimg_path) if __filter_fnames(f)]
     images.sort(key=alphanum_key)
     tdir = tempfile.mkdtemp(dir=settings.TMPDIR)
-
+    kdu_option_arr = ['Clayers=2',
+                    'Creversible=yes',
+                    'Clevels=8',
+                    '"Cprecincts={256,256},{256,256},{128,128}"',
+                    'Corder="RPCL"',
+                    'ORGgen_plt="yes"',
+                    'ORGtparts="R"',
+                    'Cblk="{64,64}"']
+    kdu_options = " ".join(kdu_option_arr)
     for image in images:
         name = os.path.basename(image)
         name, ext = os.path.splitext(name)
@@ -40,15 +48,11 @@ def convert_to_diva(indir):
                             tfile])
 
         output_file = os.path.join(out_path, "{0}.jp2".format(name))
-
         subprocess.call([settings.PATH_TO_KDU,
                             "-i", tfile,
                             "-o", output_file,
                             "-rate", "-,0.5",
-                            'Clayers=2 Creversible=yes Clevels=8 \
-"Cprecincts={256,256},{256,256},{128,128}" \
-Corder="RPCL" ORGgen_plt=yes ORGtparts=R \
-Cblk="{64,64}"'
+                            kdu_options
                         ])
     shutil.rmtree(tdir)
     os.remove(os.path.join(out_path, ".diva_conversion_in_progress"))
