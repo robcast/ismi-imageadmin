@@ -44,7 +44,6 @@ def convert_to_diva(indir):
                         "-i", tfile,
                         "-o", output_file,
                         "Clevels=8",
-                        "Clayers=2",
                         "Cblk={64,64}",
                         "Cprecincts={256,256},{256,256},{128,128}",
                         "Creversible=yes",
