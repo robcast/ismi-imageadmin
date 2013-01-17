@@ -43,6 +43,7 @@ def convert_to_diva(indir):
         subprocess.call([settings.PATH_TO_KDU,
                         "-i", tfile,
                         "-o", output_file,
+                        "-quiet",
                         "Clevels=8",
                         "Cblk={64,64}",
                         "Cprecincts={256,256},{256,256},{128,128}",
