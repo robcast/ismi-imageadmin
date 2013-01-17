@@ -44,7 +44,6 @@ def convert_to_diva(indir):
         subprocess.call([settings.PATH_TO_KDU,
                             "-i", tfile,
                             "-o", output_file,
-                            "-quiet",
                             "-rate", "-,0.5",
                             "Clayers=2",
                             "Creversible=yes",
