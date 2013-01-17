@@ -48,11 +48,11 @@ def convert_to_diva(indir):
                             "Clayers=2",
                             "Creversible=yes",
                             "Clevels=8",
-                            "\"Cprecincts={256,256},{256,256},{128,128}\"",
+                            "Cprecincts=\"{256,256},{256,256},{128,128}\"",
                             "Corder=RPCL",
                             "ORGgen_plt=yes",
                             "ORGtparts=R",
-                            "\"Cblk={64,64}\""
+                            "Cblk=\"{64,64}\""
                         ])
     shutil.rmtree(tdir)
     os.remove(os.path.join(out_path, ".diva_conversion_in_progress"))
