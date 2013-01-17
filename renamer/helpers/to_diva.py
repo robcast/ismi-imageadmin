@@ -46,6 +46,7 @@ def convert_to_diva(indir):
                             "-o", output_file,
                             "-quiet",
                             "Clevels=8",
+                            "Clayers=2",
                             "Creversible=yes",
                             'Corder="RPCL"',
                             'ORGgen_plt="yes"',
