@@ -45,9 +45,14 @@ def convert_to_diva(indir):
                             "-i", tfile,
                             "-o", output_file,
                             "-quiet",
-                            "Clevels=5",
+                            "Clevels=8",
                             "Creversible=yes",
-                            "-rate", "-,1,0.5,0.25",
+                            'Corder="RPCL"',
+                            'ORGgen_plt="yes"',
+                            '"Cprecincts={256,256},{256,256},{128,128}"',
+                            '"Cblk={64,64}"',
+                            '"ORGtparts=R"',
+                            "-rate", "-,0.5",
                         ])
     shutil.rmtree(tdir)
     os.remove(os.path.join(out_path, ".diva_conversion_in_progress"))
