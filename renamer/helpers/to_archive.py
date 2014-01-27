@@ -30,7 +30,7 @@ def move_to_archive(incoming_directory):
     basedir = os.path.split(incoming_directory)
     new_msdir = __clean_dirname(basedir[-1])
     full_ms_path = os.path.join(archive_directory, new_msdir)
-    shutil.move(incoming_directory, full_ms_path)
+    shutil.copytree(incoming_directory, full_ms_path)
 
     f = open(os.path.join(full_ms_path, '.work_in_progress'), 'w')
     f.close()
@@ -110,6 +110,10 @@ def move_to_archive(incoming_directory):
 
     f = open(os.path.join(full_ms_path, '.rename_done'), 'w')
     f.close()
+
+    # here we should clean up and move the incoming directory to a backup directory...
+    shutil.move(incoming_directory, settings.BACKUP_LOCATION)
+
     return True
 
 

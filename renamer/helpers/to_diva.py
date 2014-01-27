@@ -22,7 +22,7 @@ def convert_to_diva(indir):
     f = open(os.path.join(out_path, ".diva_conversion_in_progress"), "w")
     f.close()
 
-    images = [os.path.join(pgimg_path, f) for f in os.listdir(pgimg_path) if __filter_fnames(f)]
+    images = [os.path.join(pgimg_path, x) for x in os.listdir(pgimg_path) if __filter_fnames(x)]
     images.sort(key=alphanum_key)
     tdir = tempfile.mkdtemp(dir=settings.TMPDIR)
     for image in images:
@@ -34,9 +34,9 @@ def convert_to_diva(indir):
         tfile = os.path.join(tdir, "{0}.tiff".format(name))
 
         subprocess.call([settings.PATH_TO_VIPS,
-                            "im_copy",
-                            image,
-                            tfile])
+                         "im_copy",
+                         image,
+                         tfile])
 
         output_file = os.path.join(out_path, "{0}.jp2".format(name))
 
