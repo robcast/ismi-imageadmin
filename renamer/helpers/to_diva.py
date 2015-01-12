@@ -40,6 +40,9 @@ def convert_to_diva(indir):
 
         output_file = os.path.join(out_path, "{0}.jp2".format(name))
 
+        print("Output file: {0}".format(output_file))
+        print("Input file: {0}".format(tfile))
+
         subprocess.call([settings.PATH_TO_KDU,
                         "-i", tfile,
                         "-o", output_file,
