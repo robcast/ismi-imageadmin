@@ -91,6 +91,7 @@ def move_to_archive(incoming_directory):
     imgs = os.listdir(full_pgimg_path)
     imgs.sort(key=alphanum_key)
     pimg = [f for f in imgs if __filter_fnames(f)]
+
     for f in pimg:
         csum = __csum_file(os.path.join(full_pgimg_path, f))
         fname = os.path.relpath(os.path.join(full_pgimg_path, f), full_ms_path)
@@ -131,13 +132,14 @@ def __csum_file(filename):
     retcode = None
     try:
         retcode = subprocess.Popen([settings.PATH_TO_SHASUM,
-                            filename], stdout=subprocess.PIPE)
+                                    filename], stdout=subprocess.PIPE)
     except:
         sys.stdout.write("\trna ERROR: >>>>>> COULD NOT CHECKSUM FILE {0}\n".format(filename))
         sys.stdout.flush()
         raise(Exception)  # gettin' outta dodge
 
     output = retcode.communicate()
+    sys.stdout.write(output[0])
     res = output[0].read().strip().split("  ")
     return res[0]
 
