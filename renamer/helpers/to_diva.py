@@ -5,6 +5,8 @@ import shutil
 from celery import task
 from django.conf import settings
 from renamer.helpers.directoryinfo import alphanum_key
+from renamer.helpers.generate_json import generate_json
+
 
 valid_extensions = [".pdf", ".zip", ".jpg", ".jpeg", ".tif", ".tiff", ".JPG", ".JPEG", ".TIF", ".TIFF", ".PDF", '.png', '.PNG']
 
@@ -60,6 +62,9 @@ def convert_to_diva(indir):
 
     shutil.rmtree(tdir)
     os.remove(os.path.join(out_path, ".diva_conversion_in_progress"))
+
+    print("Generating JSON.")
+    generate_json.delay(out_path, settings.DATA_LOCATION)
 
     return True
 
