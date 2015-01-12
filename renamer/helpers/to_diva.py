@@ -48,6 +48,7 @@ def convert_to_diva(indir):
         retcode = subprocess.call([settings.PATH_TO_KDU,
                                     "-i", tfile,
                                     "-o", output_file,
+                                    "-num_threads", "2",
                                     "Clevels=5",
                                     "Cblk={64,64}",
                                     "Cprecincts={256,256},{256,256},{128,128}",
