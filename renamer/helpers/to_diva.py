@@ -40,22 +40,23 @@ def convert_to_diva(indir):
 
         output_file = os.path.join(out_path, "{0}.jp2".format(name))
 
-        print("Output file: {0}".format(output_file))
         print("Input file: {0}".format(tfile))
+        print("Output file: {0}".format(output_file))
 
-        subprocess.call([settings.PATH_TO_KDU,
-                        "-i", tfile,
-                        "-o", output_file,
-                        "-quiet",
-                        "Clevels=5",
-                        "Cblk={64,64}",
-                        "Cprecincts={256,256},{256,256},{128,128}",
-                        "Creversible=yes",
-                        "Cuse_sop=yes",
-                        "Corder=LRCP",
-                        "ORGgen_plt=yes",
-                        "ORGtparts=R",
-                        "-rate", "-,1,0.5,0.25"])
+        retcode = subprocess.call([settings.PATH_TO_KDU,
+                                    "-i", tfile,
+                                    "-o", output_file,
+                                    "Clevels=5",
+                                    "Cblk={64,64}",
+                                    "Cprecincts={256,256},{256,256},{128,128}",
+                                    "Creversible=yes",
+                                    "Cuse_sop=yes",
+                                    "Corder=LRCP",
+                                    "ORGgen_plt=yes",
+                                    "ORGtparts=R",
+                                    "-rate", "-,1,0.5,0.25"])
+
+        print("Generated {0}. Returned with code {1}. Continuing.".format(output_file, retcode))
 
     shutil.rmtree(tdir)
     os.remove(os.path.join(out_path, ".diva_conversion_in_progress"))
