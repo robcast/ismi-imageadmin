@@ -140,7 +140,7 @@ def __csum_file(filename):
 
     output = retcode.communicate()
     sys.stdout.write(output[0])
-    res = output[0].read().strip().split("  ")
+    res = output[0].strip().split("  ")
     return res[0]
 
 
