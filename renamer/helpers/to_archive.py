@@ -107,6 +107,8 @@ def move_to_archive(incoming_directory):
             sh.write("{0} {1}\n".format(csum, fname))
     sh.close()
 
+    __fix_permissions(full_ms_path)
+    
     os.remove(os.path.join(full_ms_path, '.work_in_progress'))
 
     f = open(os.path.join(full_ms_path, '.rename_done'), 'w')
@@ -160,6 +162,7 @@ def __process_pdfs(fnames, pgimg_path, backup_path):
         fname_pattern = "{0}-%04d.png".format(os.path.splitext(f)[0])
         infname = os.path.join(pgimg_path, f)
         outfname = os.path.join(pgimg_path, fname_pattern)
+        print("Converting PDF %s to PNG %s"%(infname, outfname))
         try:
             _ = subprocess.call([settings.PATH_TO_GS,
                                         "-dNOPAUSE",
@@ -170,6 +173,7 @@ def __process_pdfs(fnames, pgimg_path, backup_path):
                                         "-o", outfname,
                                         infname], env={"TEMP": settings.TMPDIR})
         except:
+            print("ERROR converting PDF!")
             raise(Exception)  # gettin' outta dodge
 
         # make a backup copy of the original PDF file
@@ -180,3 +184,25 @@ def __process_pdfs(fnames, pgimg_path, backup_path):
     retval = [f for f in os.listdir(pgimg_path) if __filter_fnames(f)]
     retval.sort(key=alphanum_key)
     return retval
+
+
+def __fix_permissions(dirpath, fperm='a+r', dperm='a+rx'):
+    """
+    walks dirpath and changes all file permissions to fperm and all directories to dperm.
+    permissions are set by system chmod.
+    """
+    try:
+        # change all files
+        _ = subprocess.call(["/usr/bin/find",
+                             dirpath,
+                             "-type", "f",
+                             "-exec", "chmod", fperm, "{}", ";"])
+        # change all directories
+        _ = subprocess.call(["/usr/bin/find",
+                             dirpath,
+                             "-type", "d",
+                             "-exec", "chmod", dperm, "{}", ";"])
+    except:
+        print("ERROR fixing permissions!")
+        raise(Exception)  # gettin' outta dodge
+    

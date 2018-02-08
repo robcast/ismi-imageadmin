@@ -35,15 +35,24 @@ def convert_to_diva(indir):
         # We'll take the safe route and convert all files, TIFF or not.
         tfile = os.path.join(tdir, "{0}.tiff".format(name))
 
-        subprocess.call([settings.PATH_TO_VIPS,
-                         "im_copy",
+        print("convert input file: {0}".format(image))
+        print("convert output file: {0}".format(tfile))
+
+        subprocess.call([settings.PATH_TO_GM,
+                         "convert",
+                         "-compress",  "None",
                          image,
                          tfile])
 
+        # subprocess.call([settings.PATH_TO_VIPS,
+        #                  "im_copy",
+        #                  image,
+        #                  tfile])
+
         output_file = os.path.join(out_path, "{0}.jp2".format(name))
 
-        print("Input file: {0}".format(tfile))
-        print("Output file: {0}".format(output_file))
+        print("kdu input file: {0}".format(tfile))
+        print("kdu output file: {0}".format(output_file))
 
         retcode = subprocess.call([settings.PATH_TO_KDU,
                                     "-i", tfile,

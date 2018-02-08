@@ -30,6 +30,7 @@ TMPDIR = "/var/tmp"
 
 
 PATH_TO_GS = "/usr/bin/gs"
+PATH_TO_GM = "/usr/bin/gm"
 PATH_TO_VIPS = "/usr/bin/vips"
 PATH_TO_SHASUM = "/usr/bin/shasum"
 PATH_TO_KDU = "/usr/local/bin/kdu_compress"
