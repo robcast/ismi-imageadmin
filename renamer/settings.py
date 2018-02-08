@@ -128,7 +128,9 @@ INSTALLED_APPS = (
     'renamer',
     'django_extensions',
     'south',
-    'djcelery'
+    'djcelery',
+    # kombu for celery queue in Django
+    'kombu.transport.django'
 )
 
 # A sample logging configuration. The only tangible logging

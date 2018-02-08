@@ -2,6 +2,10 @@ import djcelery
 
 FORCE_SCRIPT_NAME = "/"
 
+# Setup support for proxy headers
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
@@ -17,25 +21,26 @@ DATABASES = {
 # INCOMING_LOCATION = "/Users/ahankins/Documents/code/git/renamer/testing/data3/incoming"
 # DIVA_LOCATION = "/Users/ahankins/Documents/code/git/renamer/testing/data7/srv/images"
 # TMPDIR = "/Users/ahankins/.tmp"
-ARCHIVE_LOCATION = "/data1"
-INCOMING_LOCATION = "/data3/incoming"
-DIVA_LOCATION = "/data7/srv/images"
-DATA_LOCATION = "/data7/srv/data"
-BACKUP_LOCATION = "/data3/backup"
-TMPDIR = "/opt/tmp"
+ARCHIVE_LOCATION = "/tusi/data1"
+INCOMING_LOCATION = "/tusi/data3/incoming"
+DIVA_LOCATION = "/tusi/data7/srv/images"
+DATA_LOCATION = "/tusi/data7/srv/data"
+BACKUP_LOCATION = "/tusi/data3/backup"
+TMPDIR = "/var/tmp"
 
 
-PATH_TO_GS = "/usr/local/bin/gs"
-PATH_TO_VIPS = "/usr/local/bin/vips"
+PATH_TO_GS = "/usr/bin/gs"
+PATH_TO_VIPS = "/usr/bin/vips"
 PATH_TO_SHASUM = "/usr/bin/shasum"
-PATH_TO_KDU = "/bin/kdu_compress"
+PATH_TO_KDU = "/usr/local/bin/kdu_compress"
 
 
 djcelery.setup_loader()
 CELERY_IMPORTS = ("renamer.helpers.to_archive",
                   "renamer.helpers.to_diva",
                   "renamer.helpers.generate_json")
-BROKER_URL = "amqp://guest@localhost:5672//"
+#BROKER_URL = "amqp://guest@localhost:5672//"
+BROKER_URL = 'django://'
 TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
 
 CELERY_RESULT_BACKEND = "database"
