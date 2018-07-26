@@ -26,7 +26,7 @@ INCOMING_LOCATION = "/tusi/data3/incoming"
 DIVA_LOCATION = "/tusi/data7/srv/images"
 DATA_LOCATION = "/tusi/data7/srv/data"
 BACKUP_LOCATION = "/tusi/data3/backup"
-TMPDIR = "/var/tmp"
+TMPDIR = "/opt/tmp"
 
 
 PATH_TO_GS = "/usr/bin/gs"

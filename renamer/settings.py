@@ -2,7 +2,8 @@
 from settings_production import *
 djcelery.setup_loader()
 
-DEBUG = True
+DEBUG = False
+#DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (

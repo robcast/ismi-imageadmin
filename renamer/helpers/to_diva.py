@@ -68,8 +68,57 @@ def convert_to_diva(indir):
                                     "ORGtparts=R",
                                     "-rate", "-,1,0.5,0.25"])
 
-        print("Generated {0}. Returned with code {1}. Continuing.".format(output_file, retcode))
+        if retcode == 0:
+            print("Generated {0}. Returned with code {1}. Continuing.".format(output_file, retcode))
 
+        else:
+            # an encoding problem
+            print("ERROR code {1} on file {0}.".format(output_file, retcode))
+            # get image info
+            info = subprocess.check_output([settings.PATH_TO_GM,
+                                            "identify",
+                                            "-verbose",
+                                            image,
+                                            tfile])
+            
+            if info is not None and 'JPEG-Colorspace-Name: GRAYSCALE' in info:
+                # process using sLUM colorspace for grayscale
+                print("Converting {0} as sLUM.".format(output_file,))
+                retcode = subprocess.call([settings.PATH_TO_KDU,
+                                           "-i", tfile,
+                                           "-o", output_file,
+                                           "-num_threads", "2",
+                                           "Clevels=5",
+                                           "Cblk={64,64}",
+                                           "Cprecincts={256,256},{256,256},{128,128}",
+                                           "Creversible=yes",
+                                           "Cuse_sop=yes",
+                                           "Corder=LRCP",
+                                           "ORGgen_plt=yes",
+                                           "ORGtparts=R",
+                                           "-rate", "-,1,0.5,0.25",
+                                           "-jp2_space", "sLUM"])
+
+            else:
+                # process using sRGB colorspace for color
+                print("Converting {0} as sRGB.".format(output_file,))
+                retcode = subprocess.call([settings.PATH_TO_KDU,
+                                           "-i", tfile,
+                                           "-o", output_file,
+                                           "-num_threads", "2",
+                                           "Clevels=5",
+                                           "Cblk={64,64}",
+                                           "Cprecincts={256,256},{256,256},{128,128}",
+                                           "Creversible=yes",
+                                           "Cuse_sop=yes",
+                                           "Corder=LRCP",
+                                           "ORGgen_plt=yes",
+                                           "ORGtparts=R",
+                                           "-rate", "-,1,0.5,0.25",
+                                           "-jp2_space", "sRGB"])
+                
+            print("Re-generated {0}. Returned with code {1}. Continuing.".format(output_file, retcode))
+            
     shutil.rmtree(tdir)
     os.remove(os.path.join(out_path, ".diva_conversion_in_progress"))
 
