@@ -2,6 +2,11 @@
 import os
 import sys
 
+# try to fix uuid error (ROC)
+import uuid
+uuid._uuid_generate_random = None
+
+
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "renamer.settings")
 

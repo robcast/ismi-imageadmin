@@ -1,9 +1,13 @@
 # Django settings for renamer project.
+
+import uuid
+uuid._uuid_generate_random = None
+
 from settings_production import *
 djcelery.setup_loader()
 
-DEBUG = False
-#DEBUG = True
+#DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -152,7 +156,15 @@ LOGGING = {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
         }
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG'
     },
     'loggers': {
         'django.request': {

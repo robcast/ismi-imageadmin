@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    command: /webapp/docker-entrypoint.sh
+    volumes:
+      - ${PWD}/renamer.sqlite3:/webapp/renamer.sqlite3
+      - ${PWD}/test-data/tusi:/tusi
+      - /tmp:/opt/tmp
+    ports:
+      - "8000:8000"

@@ -4,3 +4,8 @@ renamer_env/*
 errors.log
 .DS_Store
 testing/*
+test-data/*
+.project
+.pydevproject
+vendor/*
+!vendor/.gitkeep

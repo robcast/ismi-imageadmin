@@ -14,19 +14,22 @@ if 'django.contrib.admin' in settings.INSTALLED_APPS:
 
 base_urlpatterns += patterns('renamer.views.main',
     url(r'^$', 'home', name="home"),
-    url(r'^manage/$', 'manage', name="manage"),
-    url(r'^to_archive/$', 'to_archive'),
-    url(r'^to_diva/$', 'to_diva'),
-    url(r'^diva_redo/$', 'diva_redo'),
-    url(r'^login/$', 'user_login'),
-    url(r'^logout/$', 'user_logout')
+    url(r'^manage/*$', 'manage', name="manage"),
+    url(r'^to_archive/*$', 'to_archive'),
+    url(r'^to_diva/*$', 'to_diva'),
+    url(r'^diva_redo/*$', 'diva_redo'),
+    url(r'^login/*$', 'user_login'),
+    url(r'^logout/*$', 'user_logout')
 )
 
-base_urlpatterns += staticfiles_urlpatterns()
+#base_urlpatterns += staticfiles_urlpatterns()
 
 urlpatterns = patterns('',
-        url(r'^imageadmin/', include(base_urlpatterns))
+        url(r'^imageadmin/*', include(base_urlpatterns))
     )
+
+urlpatterns += staticfiles_urlpatterns()
+
 # urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'renamer.views.home', name='home'),
