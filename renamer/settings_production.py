@@ -35,6 +35,8 @@ PATH_TO_GM = "/usr/bin/gm"
 PATH_TO_SHASUM = "/usr/bin/shasum"
 PATH_TO_KDU = "/usr/local/bin/kdu_compress"
 
+IIIF_MANIF_BASE_URL = "http://images.rasi.mcgill.ca/iiif/presentation"
+IIIF_IMAGE_BASE_URL = "http://images.rasi.mcgill.ca/iiif/image"
 
 djcelery.setup_loader()
 CELERY_IMPORTS = ("renamer.helpers.to_archive",

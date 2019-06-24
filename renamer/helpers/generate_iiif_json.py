@@ -24,7 +24,13 @@ import re
 import math
 import sys
 import json
-from optparse import OptionParser
+try:
+    from django.conf import settings
+except:
+    pass
+# fix UUID problem
+import uuid
+uuid._uuid_generate_random = None
 
 from celery import task
 
@@ -67,81 +73,56 @@ class GenerateIiifJson(object):
             else:
                 continue    # ignore anything else.
 
-            max_zoom = self.__get_max_zoom_level(width, height)
-            im = {
-                'mx_w': width,
-                'mx_h': height,
-                'mx_z': max_zoom,
-                'fn': f
+            canvas_uri = "%s/%s/canvas/%s"%(settings.IIIF_MANIF_BASE_URL, self.title, i)
+            image_uri = "%s/%s/image/%s"%(settings.IIIF_MANIF_BASE_URL, self.title, f)
+            image_service_uri = "%s/%s"%(settings.IIIF_IMAGE_BASE_URL, f)
+
+            iiif_images = {
+                '@type': 'oa:Annotation',
+                'motivation': 'sc:painting',
+                'resource': {
+                    '@id': image_uri,
+                    '@type': 'dctypes:Image',
+                    'service': {
+                        '@context': 'http://iiif.io/api/image/2/context.json',
+                        '@id': image_service_uri,
+                        'profile': 'http://iiif.io/api/image/2/level1.json'
+                    },
+                    'height': height,
+                    'width': width
+                },
+                'on': canvas_uri
             }
-            images.append(im)
-            zoomlevels.append(max_zoom)
 
-        lowest_max_zoom = min(zoomlevels)
-        max_ratio = min_ratio = 0
-        t_wid = [0] * (lowest_max_zoom + 1)
-        t_hei = [0] * (lowest_max_zoom + 1)
-        mx_h = [0] * (lowest_max_zoom + 1)
-        mx_w = [0] * (lowest_max_zoom + 1)
-        a_wid = []
-        a_hei = []
+            iiif_canvas = {
+                '@context': 'http://iiif.io/api/presentation/2/context.json',
+                '@id': canvas_uri,
+                '@type': 'sc:Canvas',
+                'label': "Scan No %s"%i,
+                'width': width,
+                'height': height,
+                'images': iiif_images 
+            }
+            
+            images.append(iiif_canvas)
 
-        pgs = []
-        max_ratio = 0
-        min_ratio = 100  # initialize high so min() works
 
-        for im in images:
-            page_data = []
-
-            for j in xrange(lowest_max_zoom + 1):
-                h = self.__incorporate_zoom(im['mx_h'], lowest_max_zoom - j)
-                w = self.__incorporate_zoom(im['mx_w'], lowest_max_zoom - j)
-                c = int(math.ceil(w / 256.))
-                r = int(math.ceil(h / 256.))
-                page_data.append({
-                    'c': c,
-                    'r': r,
-                    'h': h,
-                    'w': w
-                })
-
-                t_wid[j] = t_wid[j] + w
-                t_hei[j] = t_hei[j] + h
-                mx_h[j] = max(h, mx_h[j])
-                mx_w[j] = max(w, mx_w[j])
-                ratio = float(h) / float(w)
-                max_ratio = max(ratio, max_ratio)
-                min_ratio = min(ratio, min_ratio)
-
-            m_z = im['mx_z']
-            fn = im['fn']
-
-            pgs.append({
-                'd': page_data,
-                'm': m_z,
-                'f': fn
-            })
-
-        for j in xrange(lowest_max_zoom + 1):
-            a_wid.append(t_wid[j] / float(len(images)))
-            a_hei.append(t_hei[j] / float(len(images)))
-
-        dims = {
-            'a_wid': a_wid,
-            'a_hei': a_hei,
-            'max_w': mx_w,
-            'max_h': mx_h,
-            'max_ratio': max_ratio,
-            'min_ratio': min_ratio,
-            't_hei': t_hei,
-            't_wid': t_wid
-        }
+        manifest_uri = "%s/%s/manifest"%(settings.IIIF_MANIF_BASE_URL, self.title)
+        sequence_uri = "%s/%s/sequence/default"%(settings.IIIF_MANIF_BASE_URL, self.title)
 
         data = {
-            'item_title': self.title,
-            'dims': dims,
-            'max_zoom': lowest_max_zoom,
-            'pgs': pgs
+            '@context': 'http://iiif.io/api/presentation/2/context.json',
+            '@type': 'sc:Manifest',
+            '@id': manifest_uri,
+            'label': "[%s]"%self.title,
+            'description': "[Scanned document %s]"%self.title,
+            'sequences': [ {
+                '@id': 'http://example.org/iiif/book1/sequence/normal',
+                '@type': 'sc:Sequence',
+                'label': 'Default scan order',
+                'viewingHint': 'paged',
+                'canvases': images
+            } ]
         }
 
         # write the JSON out to a file in the output directory
@@ -178,14 +159,6 @@ class GenerateIiifJson(object):
         del im
         return size
 
-    def __get_max_zoom_level(self, width, height):
-        largest_dim = max(width, height)
-        zoom_levels = math.ceil(math.log((largest_dim + 1) / float(256 + 1), 2))
-        return int(zoom_levels)
-
-    def __incorporate_zoom(self, img_dim, zoom_diff):
-        return img_dim / float(2 ** zoom_diff)
-
     def __tryint(self, s):
         try:
             return int(s)
@@ -200,6 +173,12 @@ class GenerateIiifJson(object):
 
 
 if __name__ == "__main__":
+    from optparse import OptionParser
+    # fake Django settings
+    class settings(object): 
+        IIIF_IMAGE_BASE_URL = 'http://example.com/iiif/image'
+        IIIF_MANIF_BASE_URL = 'http://example.com/iiif/presentation'
+
     usage = "%prog [options] input_directory output_directory"
     parser = OptionParser(usage)
     options, args = parser.parse_args()
@@ -213,5 +192,5 @@ if __name__ == "__main__":
         'output_directory': args[1]
     }
 
-    gen = GenerateJson(**opts)
+    gen = GenerateIiifJson(**opts)
     sys.exit(gen.generate())
