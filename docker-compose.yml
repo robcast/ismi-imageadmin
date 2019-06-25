@@ -4,7 +4,8 @@ services:
   webapp:
     build: .
     environment:
-      - RUN_AS_USER=${RUN_AS_USER:-1000:1000}
+      - RUN_AS_USER=${RUN_AS_USER:-1000}
+      - RUN_AS_GROUP=${RUN_AS_GROUP:-1000}
       - VIRTUAL_HOST=${VIRTUAL_HOST:?err}
     volumes:
       - static:/webapp/renamer/static/
