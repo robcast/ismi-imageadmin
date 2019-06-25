@@ -6,8 +6,8 @@ uuid._uuid_generate_random = None
 from settings_production import *
 djcelery.setup_loader()
 
-#DEBUG = False
-DEBUG = True
+DEBUG = False
+#DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -25,7 +25,7 @@ TIME_ZONE = 'America/Montreal'
 
 import warnings
 import exceptions
-warnings.filterwarnings("ignore", category=exceptions.RuntimeWarning, module='django.db.backends.sqlite3', lineno=50)
+#warnings.filterwarnings("ignore", category=exceptions.RuntimeWarning, module='django.db.backends.sqlite3', lineno=50)
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html

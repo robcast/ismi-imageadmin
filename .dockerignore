@@ -2,3 +2,5 @@ original-scripts/
 test-data/
 docker-compose.yml
 Dockerfile
+renamer.pysqlite3
+proxy/
