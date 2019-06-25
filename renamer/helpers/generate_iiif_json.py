@@ -61,8 +61,10 @@ class GenerateIiifJson(object):
         zoomlevels = []
         images = []
 
+        page_num = 1
+        dir_name = self.title
         for i, f in enumerate(files):
-            ignore, ext = os.path.splitext(f)
+            fn, ext = os.path.splitext(f)
             if f.startswith("."):
                 continue    # ignore hidden files
 
@@ -73,16 +75,19 @@ class GenerateIiifJson(object):
             else:
                 continue    # ignore anything else.
 
-            canvas_uri = "%s/%s/canvas/%s"%(settings.IIIF_MANIF_BASE_URL, self.title, i)
-            image_uri = "%s/%s/image/%s"%(settings.IIIF_MANIF_BASE_URL, self.title, f)
-            image_service_uri = "%s/%s"%(settings.IIIF_IMAGE_BASE_URL, f)
+            canvas_uri = "%s/%s/canvas/%s"%(settings.IIIF_MANIF_BASE_URL, dir_name, page_num)
+            annotation_uri = "%s/%s/annotation/image-%s"%(settings.IIIF_MANIF_BASE_URL, dir_name, page_num)
+            image_service_uri = "%s/%s%%2F%s"%(settings.IIIF_IMAGE_BASE_URL, dir_name, f)
+            image_uri = "%s/full/500,/default.jpg"%(image_service_uri)
 
             iiif_images = {
                 '@type': 'oa:Annotation',
                 'motivation': 'sc:painting',
+                '@id': annotation_uri,
                 'resource': {
                     '@id': image_uri,
                     '@type': 'dctypes:Image',
+                    'format': 'image/jpeg',
                     'service': {
                         '@context': 'http://iiif.io/api/image/2/context.json',
                         '@id': image_service_uri,
@@ -95,20 +100,20 @@ class GenerateIiifJson(object):
             }
 
             iiif_canvas = {
-                '@context': 'http://iiif.io/api/presentation/2/context.json',
                 '@id': canvas_uri,
                 '@type': 'sc:Canvas',
-                'label': "Scan No %s"%i,
+                'label': "Scan %s"%page_num,
                 'width': width,
                 'height': height,
-                'images': iiif_images 
+                'images': [iiif_images] 
             }
             
             images.append(iiif_canvas)
+            page_num += 1
 
 
-        manifest_uri = "%s/%s/manifest"%(settings.IIIF_MANIF_BASE_URL, self.title)
-        sequence_uri = "%s/%s/sequence/default"%(settings.IIIF_MANIF_BASE_URL, self.title)
+        manifest_uri = "%s/%s/manifest"%(settings.IIIF_MANIF_BASE_URL, dir_name)
+        sequence_uri = "%s/%s/sequence/default"%(settings.IIIF_MANIF_BASE_URL, dir_name)
 
         data = {
             '@context': 'http://iiif.io/api/presentation/2/context.json',
@@ -117,10 +122,9 @@ class GenerateIiifJson(object):
             'label': "[%s]"%self.title,
             'description': "[Scanned document %s]"%self.title,
             'sequences': [ {
-                '@id': 'http://example.org/iiif/book1/sequence/normal',
+                '@id': sequence_uri,
                 '@type': 'sc:Sequence',
                 'label': 'Default scan order',
-                'viewingHint': 'paged',
                 'canvases': images
             } ]
         }
@@ -174,13 +178,13 @@ class GenerateIiifJson(object):
 
 if __name__ == "__main__":
     from optparse import OptionParser
-    # fake Django settings
-    class settings(object): 
-        IIIF_IMAGE_BASE_URL = 'http://example.com/iiif/image'
-        IIIF_MANIF_BASE_URL = 'http://example.com/iiif/presentation'
+    # manual import of ../settings.py
+    sys.path.insert(1, os.path.join(sys.path[0], '..'))
+    import settings
 
     usage = "%prog [options] input_directory output_directory"
     parser = OptionParser(usage)
+    parser.add_option("-r", action="store_true", dest="recursive")
     options, args = parser.parse_args()
 
     if len(args) < 1:
@@ -191,6 +195,22 @@ if __name__ == "__main__":
         'input_directory': args[0],
         'output_directory': args[1]
     }
+    
+    if options.recursive == True:
+        base_dir = opts['input_directory']
+        dirs = os.listdir(base_dir)
+        for d in dirs:
+            if d.startswith('.'):
+                continue
+            
+            dir_path = os.path.join(base_dir, d)
+            if os.path.isdir(dir_path):
+                opts['input_directory'] = dir_path
+                print("processing: %s"%dir_path)
+                gen = GenerateIiifJson(**opts)
+                gen.generate()
 
-    gen = GenerateIiifJson(**opts)
-    sys.exit(gen.generate())
+    else:
+        print("processing: %s"%opts['input_directory'])
+        gen = GenerateIiifJson(**opts)
+        sys.exit(gen.generate())
