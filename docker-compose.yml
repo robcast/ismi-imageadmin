@@ -18,10 +18,9 @@ services:
       - APP_TMPDIR=${APP_TMPDIR:?err}
       - IIIF_IMAGE_BASE_URL=${IIIF_IMAGE_BASE_URL:?err}
       - IIIF_MANIF_BASE_URL=${IIIF_MANIF_BASE_URL:?err}
-      - POSTGRES_PASSWORD=${DB_POSTGRES_PW:?err}
+      - DB_POSTGRES_PW=${DB_POSTGRES_PW:?err}
     volumes:
       - static:/webapp/renamer/static/
-      - ./db:/webapp/db/
       - /tmp:/opt/tmp
 
   db:

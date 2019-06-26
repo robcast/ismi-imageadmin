@@ -4,3 +4,4 @@ docker-compose.yml
 Dockerfile
 renamer.pysqlite3
 proxy/
+db/
