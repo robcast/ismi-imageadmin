@@ -18,11 +18,20 @@ services:
       - APP_TMPDIR=${APP_TMPDIR:?err}
       - IIIF_IMAGE_BASE_URL=${IIIF_IMAGE_BASE_URL:?err}
       - IIIF_MANIF_BASE_URL=${IIIF_MANIF_BASE_URL:?err}
+      - POSTGRES_PASSWORD=${DB_POSTGRES_PW:?err}
     volumes:
       - static:/webapp/renamer/static/
       - ./db:/webapp/db/
       - /tmp:/opt/tmp
 
+  db:
+    image: postgres:9-alpine
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=${DB_POSTGRES_PW:?err}
+    volumes:
+      - ./db/pgdata/:/var/lib/postgresql/data/
+      
   proxy:
     image: jwilder/nginx-proxy:alpine
     restart: always
@@ -38,18 +47,18 @@ services:
     labels:
       com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
 
-  certbot:
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    restart: always
-    environment:
-      - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL:?err}
-      # proxy should be discovered by label but it does not seem to work
-      - NGINX_PROXY_CONTAINER=renamer_proxy_1
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./proxy/vhost.d/:/etc/nginx/vhost.d/
-      - ./proxy/certs/:/etc/nginx/certs/
-      - proxy-html:/usr/share/nginx/html/
+#  certbot:
+#    image: jrcs/letsencrypt-nginx-proxy-companion
+#    restart: always
+#    environment:
+#      - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL:?err}
+#      # proxy should be discovered by label but it does not seem to work
+#      - NGINX_PROXY_CONTAINER=renamer_proxy_1
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock:ro
+#      - ./proxy/vhost.d/:/etc/nginx/vhost.d/
+#      - ./proxy/certs/:/etc/nginx/certs/
+#      - proxy-html:/usr/share/nginx/html/
       
 volumes:
   static:

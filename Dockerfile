@@ -8,6 +8,9 @@ RUN apt-get update && apt-get install -y \
 RUN mkdir -p /webapp/renamer
 WORKDIR /webapp
 ADD requirements.txt /webapp/
+# fix missing templates for django.contrib.admin 
+RUN pip install --no-binary Django Django==1.4.3
+# install the rest normally
 RUN pip install -r requirements.txt
 # copy app
 ADD renamer /webapp/renamer/

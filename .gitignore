@@ -11,5 +11,6 @@ vendor/*
 !vendor/.gitkeep
 db/*
 !db/.gitkeep
+proxy/certs/*
 /.env
 /docker-compose.override.yml

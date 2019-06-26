@@ -22,22 +22,8 @@ base_urlpatterns += patterns('renamer.views.main',
     url(r'^logout/*$', 'user_logout')
 )
 
-#base_urlpatterns += staticfiles_urlpatterns()
-
 urlpatterns = patterns('',
         url(r'^imageadmin/', include(base_urlpatterns))
     )
 
 urlpatterns += staticfiles_urlpatterns()
-
-# urlpatterns = patterns('',
-    # Examples:
-    # url(r'^$', 'renamer.views.home', name='home'),
-    # url(r'^renamer/', include('renamer.foo.urls')),
-
-    # Uncomment the admin/doc line below to enable admin documentation:
-    # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
-    # Uncomment the next line to enable the admin:
-    # url(r'^admin/', include(admin.site.urls)),
-# )
