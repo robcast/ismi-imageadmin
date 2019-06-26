@@ -47,18 +47,18 @@ services:
     labels:
       com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
 
-#  certbot:
-#    image: jrcs/letsencrypt-nginx-proxy-companion
-#    restart: always
-#    environment:
-#      - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL:?err}
-#      # proxy should be discovered by label but it does not seem to work
-#      - NGINX_PROXY_CONTAINER=renamer_proxy_1
-#    volumes:
-#      - /var/run/docker.sock:/var/run/docker.sock:ro
-#      - ./proxy/vhost.d/:/etc/nginx/vhost.d/
-#      - ./proxy/certs/:/etc/nginx/certs/
-#      - proxy-html:/usr/share/nginx/html/
+  certbot:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    restart: always
+    environment:
+      - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL:?err}
+      # proxy should be discovered by label but it does not seem to work
+      - NGINX_PROXY_CONTAINER=renamer_proxy_1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./proxy/vhost.d/:/etc/nginx/vhost.d/
+      - ./proxy/certs/:/etc/nginx/certs/
+      - proxy-html:/usr/share/nginx/html/
       
 volumes:
   static:
