@@ -5,7 +5,7 @@ import shutil
 from celery import task
 from django.conf import settings
 from renamer.helpers.directoryinfo import alphanum_key
-from renamer.helpers.generate_json import generate_json
+from renamer.helpers.generate_iiif_json import generate_json
 
 
 valid_extensions = [".pdf", ".zip", ".jpg", ".jpeg", ".tif", ".tiff", ".JPG", ".JPEG", ".TIF", ".TIFF", ".PDF", '.png', '.PNG']

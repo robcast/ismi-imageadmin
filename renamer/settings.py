@@ -1,4 +1,8 @@
 # Django settings for renamer project.
+
+import uuid
+uuid._uuid_generate_random = None
+
 from settings_production import *
 djcelery.setup_loader()
 
@@ -21,7 +25,7 @@ TIME_ZONE = 'America/Montreal'
 
 import warnings
 import exceptions
-warnings.filterwarnings("ignore", category=exceptions.RuntimeWarning, module='django.db.backends.sqlite3', lineno=50)
+#warnings.filterwarnings("ignore", category=exceptions.RuntimeWarning, module='django.db.backends.sqlite3', lineno=50)
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -152,7 +156,15 @@ LOGGING = {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
         }
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG'
     },
     'loggers': {
         'django.request': {

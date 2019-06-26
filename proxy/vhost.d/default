@@ -1,0 +1,4 @@
+# serve django static
+location /static/ {
+        root /var/www;
+}
