@@ -3,10 +3,12 @@ version: '3'
 services:
   webapp:
     build: .
+    restart: always
     environment:
+      - VIRTUAL_HOST=${VIRTUAL_HOST:?err}
+      - LETSENCRYPT_HOST=${VIRTUAL_HOST:?err}
       - RUN_AS_USER=${RUN_AS_USER:-1000}
       - RUN_AS_GROUP=${RUN_AS_GROUP:-1000}
-      - VIRTUAL_HOST=${VIRTUAL_HOST:?err}
       - APP_SECRET_KEY=${APP_SECRET_KEY:?err}
       - ARCHIVE_LOCATION=${ARCHIVE_LOCATION:?err}
       - INCOMING_LOCATION=${INCOMING_LOCATION:?err}
@@ -23,12 +25,32 @@ services:
 
   proxy:
     image: jwilder/nginx-proxy:alpine
+    restart: always
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - ./proxy/vhost.d/:/etc/nginx/vhost.d/:ro
-      - static:/var/www/static/
-    
+      - ./proxy/certs/:/etc/nginx/certs/:ro
+      - proxy-html:/usr/share/nginx/html/:ro
+      - static:/var/www/static/:ro
+    labels:
+      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+
+  certbot:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    restart: always
+    environment:
+      - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL:?err}
+      # proxy should be discovered by label but it does not seem to work
+      - NGINX_PROXY_CONTAINER=renamer_proxy_1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./proxy/vhost.d/:/etc/nginx/vhost.d/
+      - ./proxy/certs/:/etc/nginx/certs/
+      - proxy-html:/usr/share/nginx/html/
+      
 volumes:
   static:
+  proxy-html:
