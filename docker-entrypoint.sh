@@ -8,7 +8,7 @@ RUN="chroot --userspec=$RUNUSER:$RUNGROUP --skip-chdir /"
 rabbitmq-server -detached
 
 # make sure database is readable
-chown -f $RUNUSER:$RUNGROUP renamer.sqlite3
+chown -f $RUNUSER:$RUNGROUP db/renamer.sqlite3
 
 # start celery
 $RUN python manage.py celery worker --logfile=/opt/tmp/renamer-worker.log --loglevel=INFO --time-limit=3600 --concurrency=2 &

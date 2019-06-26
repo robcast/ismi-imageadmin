@@ -18,7 +18,7 @@ services:
       - IIIF_MANIF_BASE_URL=${IIIF_MANIF_BASE_URL:?err}
     volumes:
       - static:/webapp/renamer/static/
-      - ${PWD}/renamer.sqlite3:/webapp/renamer.sqlite3
+      - ./db:/webapp/db/
       - /tmp:/opt/tmp
 
   proxy:
