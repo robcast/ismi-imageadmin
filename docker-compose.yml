@@ -7,13 +7,19 @@ services:
       - RUN_AS_USER=${RUN_AS_USER:-1000}
       - RUN_AS_GROUP=${RUN_AS_GROUP:-1000}
       - VIRTUAL_HOST=${VIRTUAL_HOST:?err}
+      - APP_SECRET_KEY=${APP_SECRET_KEY:?err}
+      - ARCHIVE_LOCATION=${ARCHIVE_LOCATION:?err}
+      - INCOMING_LOCATION=${INCOMING_LOCATION:?err}
+      - DIVA_LOCATION=${DIVA_LOCATION:?err}
+      - DATA_LOCATION=${DATA_LOCATION:?err}
+      - BACKUP_LOCATION=${BACKUP_LOCATION:?err}
+      - APP_TMPDIR=${APP_TMPDIR:?err}
+      - IIIF_IMAGE_BASE_URL=${IIIF_IMAGE_BASE_URL:?err}
+      - IIIF_MANIF_BASE_URL=${IIIF_MANIF_BASE_URL:?err}
     volumes:
       - static:/webapp/renamer/static/
       - ${PWD}/renamer.sqlite3:/webapp/renamer.sqlite3
-      - ${PWD}/test-data/tusi:/tusi
       - /tmp:/opt/tmp
-    ports:
-      - "8000:8000"
 
   proxy:
     image: jwilder/nginx-proxy:alpine

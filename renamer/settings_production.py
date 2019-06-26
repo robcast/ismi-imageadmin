@@ -1,4 +1,5 @@
 import djcelery
+import os
 
 FORCE_SCRIPT_NAME = "/"
 
@@ -17,16 +18,12 @@ DATABASES = {
     }
 }
 
-# ARCHIVE_LOCATION = "/Users/ahankins/Documents/code/git/renamer/testing/data1"
-# INCOMING_LOCATION = "/Users/ahankins/Documents/code/git/renamer/testing/data3/incoming"
-# DIVA_LOCATION = "/Users/ahankins/Documents/code/git/renamer/testing/data7/srv/images"
-# TMPDIR = "/Users/ahankins/.tmp"
-ARCHIVE_LOCATION = "/tusi/data1"
-INCOMING_LOCATION = "/tusi/data3/incoming"
-DIVA_LOCATION = "/tusi/data7/srv/images"
-DATA_LOCATION = "/tusi/data7/srv/data"
-BACKUP_LOCATION = "/tusi/data3/backup"
-TMPDIR = "/opt/tmp"
+ARCHIVE_LOCATION = os.environ['ARCHIVE_LOCATION']
+INCOMING_LOCATION = os.environ['INCOMING_LOCATION']
+DIVA_LOCATION = os.environ['DIVA_LOCATION']
+DATA_LOCATION = os.environ['DATA_LOCATION']
+BACKUP_LOCATION = os.environ['BACKUP_LOCATION']
+TMPDIR = os.environ['APP_TMPDIR']
 
 
 PATH_TO_GS = "/usr/bin/gs"
@@ -35,8 +32,8 @@ PATH_TO_GM = "/usr/bin/gm"
 PATH_TO_SHASUM = "/usr/bin/shasum"
 PATH_TO_KDU = "/usr/local/bin/kdu_compress"
 
-IIIF_MANIF_BASE_URL = "http://www.example.com/iiif/manifests"
-IIIF_IMAGE_BASE_URL = "http://www.example.com/iiif/images"
+IIIF_MANIF_BASE_URL = os.environ['IIIF_MANIF_BASE_URL']
+IIIF_IMAGE_BASE_URL = os.environ['IIIF_IMAGE_BASE_URL']
 
 djcelery.setup_loader()
 CELERY_IMPORTS = ("renamer.helpers.to_archive",

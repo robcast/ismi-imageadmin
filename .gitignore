@@ -10,3 +10,4 @@ test-data/*
 vendor/*
 !vendor/.gitkeep
 /.env
+/docker-compose.override.yml

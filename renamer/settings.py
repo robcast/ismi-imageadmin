@@ -1,9 +1,12 @@
 # Django settings for renamer project.
 
+# fix UUID error with Python 2.7.x x>11
 import uuid
 uuid._uuid_generate_random = None
 
 from settings_production import *
+import os
+
 djcelery.setup_loader()
 
 DEBUG = False
@@ -21,7 +24,7 @@ MANAGERS = ADMINS
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # In a Windows environment this must be set to your system time zone.
-TIME_ZONE = 'America/Montreal'
+TIME_ZONE = 'Etc/UTC'
 
 import warnings
 import exceptions
@@ -79,7 +82,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = '!*_#*x7h%40v1d2&amp;fqqe*_!=m=p4ma&amp;1vq8hr9pv33f)8yc_e*'
+SECRET_KEY = os.environ["APP_SECRET_KEY"]
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
