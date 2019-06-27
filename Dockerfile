@@ -2,8 +2,7 @@ FROM python:2
 ENV PYTHONUNBUFFERED 1
 # install utilities in Debian
 RUN apt-get update && apt-get install -y \
-    graphicsmagick \
-    rabbitmq-server
+    graphicsmagick
 # install Django and other dependencies
 RUN mkdir -p /webapp/renamer
 WORKDIR /webapp

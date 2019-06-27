@@ -21,7 +21,7 @@ services:
       - DB_POSTGRES_PW=${DB_POSTGRES_PW:?err}
     volumes:
       - static:/webapp/renamer/static/
-      - /tmp:/opt/tmp
+      - ${LOCAL_TMPDIR:-/tmp}:${APP_TMPDIR:?err}
 
   db:
     image: postgres:9-alpine

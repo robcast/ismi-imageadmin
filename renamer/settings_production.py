@@ -50,8 +50,8 @@ djcelery.setup_loader()
 CELERY_IMPORTS = ("renamer.helpers.to_archive",
                   "renamer.helpers.to_diva",
                   "renamer.helpers.generate_json")
-BROKER_URL = "amqp://guest@localhost:5672//"
-#BROKER_URL = 'django://'
+#BROKER_URL = "amqp://guest@localhost:5672//"
+BROKER_URL = 'django://'
 TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
 
 CELERY_RESULT_BACKEND = "database"
