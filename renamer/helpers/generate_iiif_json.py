@@ -79,26 +79,6 @@ class GenerateIiifJson(object):
             annotation_uri = "%s/%s/annotation/image-%s"%(settings.IIIF_MANIF_BASE_URL, dir_name, page_num)
             image_service_uri = "%s/%s%%2F%s"%(settings.IIIF_IMAGE_BASE_URL, dir_name, f)
             image_uri = "%s/full/500,/default.jpg"%(image_service_uri)
-            login_uri = "http://localhost/auth/iiif-login"
-            logout_uri = "http://localhost/auth/iiif-login"
-            token_uri = "http://localhost/auth/iiif-token"
-
-            iiif_auth = {
-                '@context': 'http://iiif.io/api/auth/1/context.json',
-                '@id': login_uri,
-                'profile': 'http://iiif.io/api/auth/1/login',
-                'label': 'Login to ISMI image server',
-                'service' : [
-                    {
-                        '@id': token_uri,
-                        'profile': 'http://iiif.io/api/auth/1/token'
-                    },
-                    {
-                        '@id': logout_uri,
-                        'profile': 'http://iiif.io/api/auth/1/logout',
-                        'label': 'Logout from ISMI image server'
-                    }
-                ]}
 
             iiif_images = {
                 '@type': 'oa:Annotation',
@@ -112,13 +92,33 @@ class GenerateIiifJson(object):
                         '@context': 'http://iiif.io/api/image/2/context.json',
                         '@id': image_service_uri,
                         'profile': 'http://iiif.io/api/image/2/level1.json',
-                        'service': iiif_auth
                     },
                     'height': height,
                     'width': width
                 },
                 'on': canvas_uri
             }
+
+            if settings.IIIF_LOGIN_URL:
+                iiif_auth = {
+                    '@context': 'http://iiif.io/api/auth/1/context.json',
+                    '@id': settings.IIIF_LOGIN_URL,
+                    'profile': 'http://iiif.io/api/auth/1/login',
+                    'label': 'Login to ISMI image server',
+                    'service' : [
+                        {
+                            '@id': settings.IIIF_TOKEN_URL,
+                            'profile': 'http://iiif.io/api/auth/1/token'
+                        },
+                        {
+                            '@id': settings.IIIF_LOGOUT_URL,
+                            'profile': 'http://iiif.io/api/auth/1/logout',
+                            'label': 'Logout from ISMI image server'
+                        }
+                    ]}
+                # add to image service
+                iiif_images['resource']['service']['service'] = iiif_auth
+
 
             iiif_canvas = {
                 '@id': canvas_uri,

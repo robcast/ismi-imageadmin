@@ -43,8 +43,13 @@ PATH_TO_GM = "/usr/bin/gm"
 PATH_TO_SHASUM = "/usr/bin/shasum"
 PATH_TO_KDU = "/usr/local/bin/kdu_compress"
 
+# IIIF-Presentation manifests
 IIIF_MANIF_BASE_URL = os.environ['IIIF_MANIF_BASE_URL']
 IIIF_IMAGE_BASE_URL = os.environ['IIIF_IMAGE_BASE_URL']
+# IIIF-Auth (optional)
+IIIF_LOGIN_URL = os.environ.get('IIIF_LOGIN_URL')
+IIIF_LOGOUT_URL = os.environ.get('IIIF_LOGOUT_URL')
+IIIF_TOKEN_URL = os.environ.get('IIIF_TOKEN_URL')
 
 djcelery.setup_loader()
 CELERY_IMPORTS = ("renamer.helpers.to_archive",
