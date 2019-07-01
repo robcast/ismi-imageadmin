@@ -29,3 +29,8 @@ After creating a new empty database run:
 docker-compose exec webapp python manage.py syncdb
 docker-compose exec webapp python manage.py migrate
 ```
+
+To re-generate all IIIF manifests you can run the generate_iiif_json.py script manually:
+```
+docker-compose exec webapp python renamer/helpers/generate_iiif_json.py -r /data/image-presentation/data7/srv/images /data/image-presentation/data7/srv/data
+```
