@@ -1,7 +1,7 @@
 import djcelery
 import os
 
-FORCE_SCRIPT_NAME = "/"
+#FORCE_SCRIPT_NAME = "/"
 
 # Setup support for proxy headers
 USE_X_FORWARDED_HOST = True

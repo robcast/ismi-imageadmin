@@ -8,6 +8,7 @@ from renamer.helpers.to_diva import convert_to_diva
 from renamer.forms.login import LoginForm
 import shutil
 import os
+import logging
 
 
 @login_required(login_url="/imageadmin/login/")
@@ -15,12 +16,14 @@ def home(request):
     archive_dirs = list_directory(settings.ARCHIVE_LOCATION)
     diva_dirs = list_directory(settings.DIVA_LOCATION)
 
+    logging.debug("scanning archive directories...")
     archive_in_progress = []
     for d in archive_dirs:
         full_path = os.path.join(settings.ARCHIVE_LOCATION, d)
         if os.path.exists(os.path.join(full_path, ".work_in_progress")):
             archive_in_progress.append(d)
 
+    logging.debug("scanning diva directories...")
     diva_in_progress = []
     for d in diva_dirs:
         full_path = os.path.join(settings.DIVA_LOCATION, d)
