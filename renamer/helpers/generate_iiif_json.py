@@ -228,8 +228,11 @@ if __name__ == "__main__":
             if os.path.isdir(dir_path):
                 opts['input_directory'] = dir_path
                 print("processing: %s"%dir_path)
-                gen = GenerateIiifJson(**opts)
-                gen.generate()
+                try:
+                    gen = GenerateIiifJson(**opts)
+                    gen.generate()
+                except:
+                    print("ERROR generating manifest for %s"%dir_path)
 
     else:
         print("processing: %s"%opts['input_directory'])
