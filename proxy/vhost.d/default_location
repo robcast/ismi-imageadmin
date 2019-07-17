@@ -1,0 +1,2 @@
+# wait longer for Django
+proxy_read_timeout 120s;

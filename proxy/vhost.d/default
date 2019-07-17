@@ -1,4 +1,4 @@
-# serve django static
+# map Django static directory
 location /static/ {
-        root /var/www;
+    root /var/www/;
 }
