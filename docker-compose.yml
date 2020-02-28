@@ -22,6 +22,11 @@ services:
     volumes:
       - static:/webapp/renamer/static/
       - ${LOCAL_TMPDIR:-/tmp}:${APP_TMPDIR:?err}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   db:
     image: postgres:9-alpine
@@ -30,6 +35,11 @@ services:
       - POSTGRES_PASSWORD=${DB_POSTGRES_PW:?err}
     volumes:
       - ./db/pgdata/:/var/lib/postgresql/data/
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
       
   proxy:
     image: jwilder/nginx-proxy:alpine
@@ -45,6 +55,11 @@ services:
       - static:/var/www/static/:ro
     labels:
       com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   certbot:
     image: jrcs/letsencrypt-nginx-proxy-companion
@@ -58,6 +73,11 @@ services:
       - ./proxy/vhost.d/:/etc/nginx/vhost.d/
       - ./proxy/certs/:/etc/nginx/certs/
       - proxy-html:/usr/share/nginx/html/
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
       
 volumes:
   static:
