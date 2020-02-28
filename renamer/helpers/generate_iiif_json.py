@@ -78,7 +78,7 @@ class GenerateIiifJson(object):
             canvas_uri = "%s/%s/canvas/%s"%(settings.IIIF_MANIF_BASE_URL, dir_name, page_num)
             annotation_uri = "%s/%s/annotation/image-%s"%(settings.IIIF_MANIF_BASE_URL, dir_name, page_num)
             image_service_uri = "%s/%s%%2F%s"%(settings.IIIF_IMAGE_BASE_URL, dir_name, f)
-            image_uri = "%s/full/500,/default.jpg"%(image_service_uri)
+            image_uri = "%s/full/500,/0/default.jpg"%(image_service_uri)
 
             iiif_images = {
                 '@type': 'oa:Annotation',
