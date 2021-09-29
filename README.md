@@ -52,7 +52,7 @@ image admin service.
 ## Debugging
 
 To make troubleshooting easier you can access Django directly
-at port 8000 bypassing the proxy if you enabled the option in
+at http://localhost:8000/imageadmin/ bypassing the proxy if you enabled the option in
 `docker-compose.override.yml`.
 
 Additionally you can set `DEBUG = True` in `renamer/settings.py` to
