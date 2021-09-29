@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  webapp:
+    ## map base directory for images (see also *_LOCATION in .env)
+    volumes:
+      - ${PWD}/test-data/tusi:/tusi
+    ## enable direct access to Django on port 8000
+    ports:
+      - "8000:8000"
+
+## disable certbot
+#  certbot:
+#    image: tianon/true
+#    restart: "no"
