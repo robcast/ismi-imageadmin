@@ -7,10 +7,8 @@ testing/*
 test-data/*
 .project
 .pydevproject
-vendor/*
-!vendor/.gitkeep
-db/*
-!db/.gitkeep
 proxy/certs/*
 /.env
 /docker-compose.override.yml
+/.settings/
+/django4/

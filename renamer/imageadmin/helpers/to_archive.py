@@ -1,4 +1,4 @@
-from celery import task
+from celery import shared_task
 from celery import current_task
 from celery import states
 import os
@@ -8,8 +8,9 @@ import sys
 import hashlib
 import zipfile
 import subprocess
+import logging
 from django.conf import settings
-from renamer.helpers.directoryinfo import alphanum_key
+from imageadmin.helpers.directoryinfo import alphanum_key
 
 valid_extensions = [".pdf", ".zip", ".jpg", ".jpeg", ".tif", ".tiff", ".JPG", ".JPEG", ".TIF", ".TIFF", ".PDF", '.png', '.PNG']
 RE_uuid = r"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"
@@ -17,8 +18,9 @@ RE_spaces = r"[\s]+"
 RE_underscores = r"[_]+"
 
 
-@task(ignore_result=True)
+@shared_task(ignore_result=True)
 def move_to_archive(incoming_directory):
+    logging.debug(f"starting move to archive {incoming_directory}")
     incoming_directory = incoming_directory.rstrip("/")
     archive_directory = settings.ARCHIVE_LOCATION
     if not os.path.exists(os.path.join(incoming_directory, "pageimg")):
@@ -28,7 +30,7 @@ def move_to_archive(incoming_directory):
         return False
 
     basedir = os.path.split(incoming_directory)
-    new_msdir = __clean_dirname(basedir[-1])
+    new_msdir = _clean_dirname(basedir[-1])
     full_ms_path = os.path.join(archive_directory, new_msdir)
     shutil.copytree(incoming_directory, full_ms_path)
 
@@ -44,6 +46,7 @@ def move_to_archive(incoming_directory):
     all_extensions = set([os.path.splitext(f)[-1].lower() for f in fnames])
 
     if ".zip" in all_extensions:
+        logging.debug(f"unpacking ZIP files in {incoming_directory}")
         if not os.path.exists(full_backup_path):
             os.mkdir(full_backup_path)
 
@@ -60,21 +63,24 @@ def move_to_archive(incoming_directory):
                 zipf.close()
             except:
                 # zipfile open failed. Pass along a message and fail the task.
+                logging.error(f"unpacking ZIP file failed: {infname}")
                 current_task.update_state(state=states.FAILURE)
                 return False
 
-        os.rename(infname, os.path.join(full_backup_path, f))
+            os.rename(infname, os.path.join(full_backup_path, f))
 
-    fnames = [f for f in os.listdir(full_pgimg_path) if __filter_fnames(f)]
+    fnames = [f for f in os.listdir(full_pgimg_path) if _filter_fnames(f)]
     fnames.sort(key=alphanum_key)
 
     all_extensions = set([os.path.splitext(f)[-1].lower() for f in fnames])
     if ".pdf" in all_extensions:
+        logging.debug(f"unpacking PDF files in {incoming_directory}")
         # process pdf files
         try:
-            fnames = __process_pdfs(fnames, full_pgimg_path, full_backup_path)
+            fnames = _process_pdfs(fnames, full_pgimg_path, full_backup_path)
         except:
             # pdf convert failed. Pass along a message and fail the task.
+            logging.exception(f"processing PDFs failed!")
             current_task.update_state(state=states.FAILURE)
             return False
 
@@ -90,37 +96,39 @@ def move_to_archive(incoming_directory):
     sh = open(info_file, 'w')
     imgs = os.listdir(full_pgimg_path)
     imgs.sort(key=alphanum_key)
-    pimg = [f for f in imgs if __filter_fnames(f)]
+    pimg = [f for f in imgs if _filter_fnames(f)]
 
+    logging.debug(f"creating checksums in {incoming_directory}")
     for f in pimg:
-        csum = __csum_file(os.path.join(full_pgimg_path, f))
+        csum = _csum_file(os.path.join(full_pgimg_path, f))
         fname = os.path.relpath(os.path.join(full_pgimg_path, f), full_ms_path)
         sh.write("{0} {1}\n".format(csum, fname))
 
     if os.path.exists(full_backup_path):
         bimgs = os.listdir(full_backup_path)
         bimgs.sort(key=alphanum_key)
-        bkup = [f for f in bimgs if __filter_fnames(f)]
+        bkup = [f for f in bimgs if _filter_fnames(f)]
         for f in bkup:
-            csum = __csum_file(os.path.join(full_backup_path, f))
+            csum = _csum_file(os.path.join(full_backup_path, f))
             fname = os.path.relpath(os.path.join(full_backup_path, f), full_ms_path)
             sh.write("{0} {1}\n".format(csum, fname))
     sh.close()
 
-    __fix_permissions(full_ms_path)
+    _fix_permissions(full_ms_path)
     
+    logging.debug(f"move to archive done for {incoming_directory}")
     os.remove(os.path.join(full_ms_path, '.work_in_progress'))
 
     f = open(os.path.join(full_ms_path, '.rename_done'), 'w')
     f.close()
 
-    # here we should clean up and move the incoming directory to a backup directory...
+    # move the incoming directory to a backup directory
     shutil.move(incoming_directory, settings.BACKUP_LOCATION)
 
     return True
 
 
-def __filter_fnames(fname):
+def _filter_fnames(fname):
     if fname.startswith('.'):
         return False
     if fname == "Thumbs.db":
@@ -130,23 +138,17 @@ def __filter_fnames(fname):
     return True
 
 
-def __csum_file(filename):
-    retcode = None
-    try:
-        retcode = subprocess.Popen([settings.PATH_TO_SHASUM,
-                                    filename], stdout=subprocess.PIPE)
-    except:
-        sys.stdout.write("\trna ERROR: >>>>>> COULD NOT CHECKSUM FILE {0}\n".format(filename))
-        sys.stdout.flush()
-        raise(Exception)  # gettin' outta dodge
+def _csum_file(filename):
+    piperes = subprocess.run([settings.PATH_TO_SHASUM, filename],
+                             capture_output=True,
+                             check=True)
 
-    output = retcode.communicate()
-    sys.stdout.write(output[0])
-    res = output[0].strip().split("  ")
+    # process output
+    res = piperes.stdout.decode(errors='ignore').strip().split("  ")
     return res[0]
 
 
-def __clean_dirname(msdir):
+def _clean_dirname(msdir):
     # remove any extraneous spaces
     newdir = re.sub(RE_spaces, "_", msdir)
     # ensure we only ever have one underscore (in case there was " _")
@@ -154,7 +156,7 @@ def __clean_dirname(msdir):
     return newdir
 
 
-def __process_pdfs(fnames, pgimg_path, backup_path):
+def _process_pdfs(fnames, pgimg_path, backup_path):
     for f in fnames:
         if os.path.splitext(f)[-1] != ".pdf":
             continue
@@ -162,47 +164,43 @@ def __process_pdfs(fnames, pgimg_path, backup_path):
         fname_pattern = "{0}-%04d.png".format(os.path.splitext(f)[0])
         infname = os.path.join(pgimg_path, f)
         outfname = os.path.join(pgimg_path, fname_pattern)
-        print("Converting PDF %s to PNG %s"%(infname, outfname))
-        try:
-            _ = subprocess.call([settings.PATH_TO_GS,
-                                        "-dNOPAUSE",
-                                        "-q",
-                                        "-r150x150",
-                                        "-sDEVICE=png16m",
-                                        "-dBATCH",
-                                        "-o", outfname,
-                                        infname], env={"TEMP": settings.TMPDIR})
-        except:
-            print("ERROR converting PDF!")
-            raise(Exception)  # gettin' outta dodge
+        loggin.debug("Converting PDF %s to PNG %s"%(infname, outfname))
+        subprocess.run([settings.PATH_TO_GS,
+                        "-dNOPAUSE",
+                        "-q",
+                        "-r150x150",
+                        "-sDEVICE=png16m",
+                        "-dBATCH",
+                        "-o", outfname,
+                        infname],
+                        env={"TEMP": settings.TMPDIR},
+                        check=True)
 
         # make a backup copy of the original PDF file
         if not os.path.exists(backup_path):
             os.mkdir(backup_path)
         os.rename(infname, os.path.join(backup_path, f))
 
-    retval = [f for f in os.listdir(pgimg_path) if __filter_fnames(f)]
-    retval.sort(key=alphanum_key)
-    return retval
+    files = [f for f in os.listdir(pgimg_path) if _filter_fnames(f)]
+    files.sort(key=alphanum_key)
+    return files
 
 
-def __fix_permissions(dirpath, fperm='a+r', dperm='a+rx'):
+def _fix_permissions(dirpath, fperm='a+r', dperm='a+rx'):
     """
     walks dirpath and changes all file permissions to fperm and all directories to dperm.
     permissions are set by system chmod.
     """
-    try:
-        # change all files
-        _ = subprocess.call(["/usr/bin/find",
-                             dirpath,
-                             "-type", "f",
-                             "-exec", "chmod", fperm, "{}", ";"])
-        # change all directories
-        _ = subprocess.call(["/usr/bin/find",
-                             dirpath,
-                             "-type", "d",
-                             "-exec", "chmod", dperm, "{}", ";"])
-    except:
-        print("ERROR fixing permissions!")
-        raise(Exception)  # gettin' outta dodge
-    
+    logging.debug(f"fixing permissions in directory {dirpath}")
+    # change all files
+    subprocess.run(["/usr/bin/find",
+                    dirpath,
+                    "-type", "f",
+                    "-exec", "chmod", fperm, "{}", ";"],
+                    check=True)
+    # change all directories
+    subprocess.run(["/usr/bin/find",
+                    dirpath,
+                    "-type", "d",
+                    "-exec", "chmod", dperm, "{}", ";"],
+                    check=True)    

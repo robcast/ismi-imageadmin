@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2013 by Andrew Hankinson
+# Copyright (C) 2013,2018 by Andrew Hankinson, Robert Casties
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,21 @@ import re
 import math
 import sys
 import json
+import logging
 try:
     from django.conf import settings
 except:
     pass
-# fix UUID problem
-import uuid
-uuid._uuid_generate_random = None
 
-from celery import task
+from celery import shared_task
 
 
-@task(ignore_result=True)
+@shared_task(ignore_result=True)
 def generate_json(indir, outdir):
+    logging.debug(f"Starting generate IIIF JSON on {indir} to {outdir}")
     gen = GenerateIiifJson(indir, outdir)
     res = gen.generate()
-    print("Generate Json returned: {0}".format(res))
+    logging.debug("Generate JSON finished with: {0}".format(res))
 
 
 class GenerateIiifJson(object):
@@ -49,14 +48,10 @@ class GenerateIiifJson(object):
         self.title = os.path.basename(self.input_directory)
 
     def generate(self):
-        self.__generate()
-        return True
-
-    def __generate(self):
         img_dir = self.input_directory
 
         files = os.listdir(img_dir)
-        files.sort(key=self.__alphanum_key)  # sort alphabetical, not asciibetical
+        files.sort(key=self._alphanum_key)  # sort alphabetical, not asciibetical
         lowest_max_zoom = 0
         zoomlevels = []
         images = []
@@ -69,9 +64,9 @@ class GenerateIiifJson(object):
                 continue    # ignore hidden files
 
             if ext in ('.jp2', '.jpx'):
-                width, height = self.__img_size_jp2(os.path.join(img_dir, f))
+                width, height = self._img_size_jp2(os.path.join(img_dir, f))
             elif ext in ('.tiff', '.tif'):
-                width, height = self.__img_size_tiff(os.path.join(img_dir, f))
+                width, height = self._img_size_tiff(os.path.join(img_dir, f))
             else:
                 continue    # ignore anything else.
 
@@ -154,8 +149,9 @@ class GenerateIiifJson(object):
         f = open(os.path.join(self.output_directory, "{0}.json".format(self.title)), 'w')
         json.dump(data, f)
         f.close()
+        return True
 
-    def __img_size_jp2(self, fn):
+    def _img_size_jp2(self, fn):
         # we implement our own header reader since all the existing
         # JPEG2000 libraries seem to read the entire image in, and they're
         # just tooooo sloooowww.
@@ -169,7 +165,7 @@ class GenerateIiifJson(object):
         f.close()
         return (width, height)
 
-    def __img_size_tiff(self, fn):
+    def _img_size_tiff(self, fn):
         # We can use the VIPS module here for TIFF, since it can handle all the
         # ins and outs of the TIFF image format quite nicely.
 
@@ -184,17 +180,17 @@ class GenerateIiifJson(object):
         del im
         return size
 
-    def __tryint(self, s):
+    def _tryint(self, s):
         try:
             return int(s)
         except:
             return s
 
-    def __alphanum_key(self, s):
+    def _alphanum_key(self, s):
         """ Turn a string into a list of string and number chunks.
             "z23a" -> ["z", 23, "a"]
         """
-        return [self.__tryint(c) for c in re.split('([0-9]+)', s)]
+        return [self._tryint(c) for c in re.split('([0-9]+)', s)]
 
 
 if __name__ == "__main__":

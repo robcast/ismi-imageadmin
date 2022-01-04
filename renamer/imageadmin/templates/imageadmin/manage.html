@@ -3,14 +3,14 @@
 {% block content %}
 
 <div class="alert alert-info">
-    <p>Please check the <a href="/imageadmin">Status Page</a> before performing any of these operations!</p>
+    <p>Please check the <a href="{% url 'home' %}">Status Page</a> before performing any of these operations!</p>
 </div>
 
 <form action="/imageadmin/to_archive/" method="POST">
     {% csrf_token %}
     <legend>Incoming Files</legend>
     <span class="help-block">These folders are in the "Incoming" folder on data3 and are ready to be moved to data1. They will be processed and moved.</span>
-    {% include "main/partials/table_listing.html" with filenames=to_archive group_name="to_archive_chk" %}
+    {% include "imageadmin/partials/table_listing.html" with filenames=to_archive group_name="to_archive_chk" %}
 </form>
 
 <form action="/imageadmin/to_diva/" method="POST">
@@ -19,7 +19,7 @@
     <span class="help-block">These folders are in data1 and have not been prepared for Diva. Processing these files will copy them from data1 to data7 and process them accordingly.</span>
 
     <div>
-        {% include "main/partials/table_listing.html" with filenames=to_diva group_name="to_diva_chk" %}
+        {% include "imageadmin/partials/table_listing.html" with filenames=to_diva group_name="to_diva_chk" %}
     </div>
 </form>
 
@@ -29,7 +29,7 @@
     <span class="help-block">These folders are in data1 and have been prepared for Diva, but if you want to reprocess them select them and they will be re-done.</span>
 
     <div>
-        {% include "main/partials/table_listing.html" with filenames=diva_redo group_name="redo_diva_chk" %}
+        {% include "imageadmin/partials/table_listing.html" with filenames=diva_redo group_name="redo_diva_chk" %}
     </div>
 </form>
 

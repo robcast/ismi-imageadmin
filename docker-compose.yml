@@ -3,7 +3,10 @@ version: '3'
 services:
   webapp:
     build: .
-    restart: always
+    restart: unless-stopped
+    depends_on:
+      - db
+      - broker
     environment:
       - VIRTUAL_HOST=${VIRTUAL_HOST:?err}
       - LETSENCRYPT_HOST=${VIRTUAL_HOST:?err}
@@ -19,6 +22,8 @@ services:
       - IIIF_IMAGE_BASE_URL=${IIIF_IMAGE_BASE_URL:?err}
       - IIIF_MANIF_BASE_URL=${IIIF_MANIF_BASE_URL:?err}
       - DB_POSTGRES_PW=${DB_POSTGRES_PW:?err}
+      - RUN_MODE=${RUN_MODE:-production}
+      - RUN_LOG_LEVEL=${RUN_LOG_LEVEL:-INFO}
     volumes:
       - static:/webapp/renamer/static/
       - ${LOCAL_TMPDIR:-/tmp}:${APP_TMPDIR:?err}
@@ -29,8 +34,8 @@ services:
         max-file: "3"
 
   db:
-    image: postgres:9-alpine
-    restart: always
+    image: postgres:13-alpine
+    restart: unless-stopped
     environment:
       - POSTGRES_PASSWORD=${DB_POSTGRES_PW:?err}
     volumes:
@@ -40,10 +45,16 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  broker:
+    image: rabbitmq:3-alpine
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
       
   proxy:
     image: jwilder/nginx-proxy:alpine
-    restart: always
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
@@ -63,7 +74,7 @@ services:
 
   certbot:
     image: jrcs/letsencrypt-nginx-proxy-companion
-    restart: always
+    restart: unless-stopped
     environment:
       - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL:?err}
       # proxy should be discovered by label but it does not seem to work
