@@ -27,6 +27,8 @@ services:
     volumes:
       - static:/webapp/renamer/static/
       - ${LOCAL_TMPDIR:-/tmp}:${APP_TMPDIR:?err}
+    networks:
+      - internal
     logging:
       driver: json-file
       options:
@@ -40,6 +42,8 @@ services:
       - POSTGRES_PASSWORD=${DB_POSTGRES_PW:?err}
     volumes:
       - pgdata:/var/lib/postgresql/data/
+    networks:
+      - internal
     logging:
       driver: json-file
       options:
@@ -51,46 +55,41 @@ services:
     restart: unless-stopped
     environment:
       - RABBITMQ_DEFAULT_USER=guest
+    networks:
+      - internal
       
-  proxy:
+  nginx:
     image: jwilder/nginx-proxy:alpine
     restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
+    labels:
+      # use traefik proxy
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy-net"
+      # create router for our host
+      - "traefik.http.routers.imageadmin.rule=Host(`${VIRTUAL_HOST:?err}`) && PathPrefix(`/imageadmin`)"
+      # use TLS
+      - "traefik.http.routers.imageadmin.entrypoints=https"
+      - "traefik.http.routers.imageadmin.tls=true"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - ./proxy/vhost.d/:/etc/nginx/vhost.d/:ro
-      - ./proxy/certs/:/etc/nginx/certs/:ro
-      - proxy-html:/usr/share/nginx/html/:ro
       - static:/var/www/static/:ro
-    labels:
-      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+    networks:
+      - internal
+      - proxy-net
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
 
-  certbot:
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    restart: unless-stopped
-    environment:
-      - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL:?err}
-      # proxy should be discovered by label but it does not seem to work
-      - NGINX_PROXY_CONTAINER=renamer_proxy_1
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./proxy/vhost.d/:/etc/nginx/vhost.d/
-      - ./proxy/certs/:/etc/nginx/certs/
-      - proxy-html:/usr/share/nginx/html/
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-      
 volumes:
   static:
   proxy-html:
   pgdata:
+
+networks:
+  internal:
+  proxy-net:
+    name: proxy-net
+    external: true
