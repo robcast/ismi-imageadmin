@@ -13,3 +13,12 @@ services:
 #  certbot:
 #    image: tianon/true
 #    restart: "no"
+
+volumes:
+  # postgres data in host filesystem
+  pgdata:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./data/pgdata
+      o: bind

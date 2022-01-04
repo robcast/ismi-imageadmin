@@ -39,7 +39,7 @@ services:
     environment:
       - POSTGRES_PASSWORD=${DB_POSTGRES_PW:?err}
     volumes:
-      - ./db/pgdata/:/var/lib/postgresql/data/
+      - pgdata:/var/lib/postgresql/data/
     logging:
       driver: json-file
       options:
@@ -93,3 +93,4 @@ services:
 volumes:
   static:
   proxy-html:
+  pgdata:
