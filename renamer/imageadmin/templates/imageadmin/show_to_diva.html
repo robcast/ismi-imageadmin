@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="alert alert-info">
+    <p>Please check the <a href="{% url 'home' %}">Status Page</a> before performing any of these operations!</p>
+</div>
+
+<form action="/imageadmin/to_diva/" method="POST">
+    {% csrf_token %}
+    <legend>Create IIIF Presentation Files</legend>
+    <span class="help-block">These folders are in the archive (data1) and have not been prepared for IIIF online presentation. 
+    Processing these files will copy them from data1 to data7 and process them accordingly.</span>
+
+    <div>
+        {% include "imageadmin/partials/table_listing.html" with filenames=to_diva group_name="to_diva_chk" %}
+    </div>
+</form>
+
+{% endblock %}

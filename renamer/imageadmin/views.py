@@ -63,6 +63,51 @@ def manage(request):
 
 
 @login_required
+def show_to_archive(request):
+    archive_dirs = list_directory(settings.ARCHIVE_LOCATION)
+    incoming_dirs = list_directory(settings.INCOMING_LOCATION)
+
+    incoming_to_archive = check_difference(incoming_dirs, archive_dirs)
+    incoming_to_archive.sort(key=alphanum_key)
+
+    data = {
+        'to_archive': incoming_to_archive,
+    }
+
+    return render(request, 'imageadmin/show_to_archive.html', data)
+
+
+@login_required
+def show_to_diva(request):
+    archive_dirs = list_directory(settings.ARCHIVE_LOCATION)
+    diva_dirs = list_directory(settings.DIVA_LOCATION)
+
+    archive_to_diva = check_difference(archive_dirs, diva_dirs)
+    archive_to_diva.sort(key=alphanum_key)
+
+    data = {
+        'to_diva': archive_to_diva,
+    }
+
+    return render(request, 'imageadmin/show_to_diva.html', data)
+
+
+@login_required
+def show_diva_redo(request):
+    archive_dirs = list_directory(settings.ARCHIVE_LOCATION)
+    diva_dirs = list_directory(settings.DIVA_LOCATION)
+
+    diva_redo = check_intersection(archive_dirs, diva_dirs)
+    diva_redo.sort(key=alphanum_key)
+
+    data = {
+        'diva_redo': diva_redo
+    }
+
+    return render(request, 'imageadmin/show_diva_redo.html', data)
+
+
+@login_required
 def to_archive(request):
     filenames = request.POST.getlist('to_archive_chk')
     absolute_filenames = [os.path.join(settings.INCOMING_LOCATION, f) for f in filenames]

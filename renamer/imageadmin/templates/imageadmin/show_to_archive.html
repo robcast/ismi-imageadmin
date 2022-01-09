@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="alert alert-info">
+    <p>Please check the <a href="{% url 'home' %}">Status Page</a> before performing any of these operations!</p>
+</div>
+
+<form action="/imageadmin/to_archive/" method="POST">
+    {% csrf_token %}
+    <legend>Archive Incoming Files</legend>
+    <span class="help-block">These folders are in the "Incoming" folder (data3/incoming) and are ready to be moved to the archive (data1). 
+    They will be processed and moved.</span>
+    
+    <div>
+      {% include "imageadmin/partials/table_listing.html" with filenames=to_archive group_name="to_archive_chk" %}
+    </div>
+</form>
+
+{% endblock %}

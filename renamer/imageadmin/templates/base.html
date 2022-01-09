@@ -32,8 +32,11 @@
           <a class="brand" href="#">ISMI Image Management Console</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-              <li><a href="{% url 'home' %}">Home</a></li>
-              <li><a href="{% url 'manage' %}">Manage</a></li>
+              <li><a href="{% url 'home' %}">Status</a></li>
+              <!-- <li><a href="{% url 'manage' %}">Manage</a></li> -->
+              <li><a href="{% url 'show_to_archive' %}">Archive</a></li>             
+              <li><a href="{% url 'show_to_diva' %}">Presentation</a></li>             
+              <li><a href="{% url 'show_diva_redo' %}">Re-do Presentation</a></li>             
             </ul>
           </div><!--/.nav-collapse -->
         </div>
