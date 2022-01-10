@@ -73,7 +73,7 @@ services:
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - ./proxy/vhost.d/:/etc/nginx/vhost.d/:ro
-      - static:/var/www/static/:ro
+      - static:/var/www/imageadmin/static/:ro
     networks:
       - internal
       - proxy-net
