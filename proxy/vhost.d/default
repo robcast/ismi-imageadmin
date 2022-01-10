@@ -1,4 +1,4 @@
 # map Django static directory
-location /static/ {
+location /imageadmin/static/ {
     root /var/www/;
 }

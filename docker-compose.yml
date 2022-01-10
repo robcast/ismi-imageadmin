@@ -3,7 +3,10 @@ version: '3'
 services:
   webapp:
     build: .
-    restart: always
+    restart: unless-stopped
+    depends_on:
+      - db
+      - broker
     environment:
       - VIRTUAL_HOST=${VIRTUAL_HOST:?err}
       - LETSENCRYPT_HOST=${VIRTUAL_HOST:?err}
@@ -19,9 +22,13 @@ services:
       - IIIF_IMAGE_BASE_URL=${IIIF_IMAGE_BASE_URL:?err}
       - IIIF_MANIF_BASE_URL=${IIIF_MANIF_BASE_URL:?err}
       - DB_POSTGRES_PW=${DB_POSTGRES_PW:?err}
+      - RUN_MODE=${RUN_MODE:-production}
+      - RUN_LOG_LEVEL=${RUN_LOG_LEVEL:-INFO}
     volumes:
       - static:/webapp/renamer/static/
       - ${LOCAL_TMPDIR:-/tmp}:${APP_TMPDIR:?err}
+    networks:
+      - internal
     logging:
       driver: json-file
       options:
@@ -29,56 +36,60 @@ services:
         max-file: "3"
 
   db:
-    image: postgres:9-alpine
-    restart: always
+    image: postgres:13-alpine
+    restart: unless-stopped
     environment:
       - POSTGRES_PASSWORD=${DB_POSTGRES_PW:?err}
     volumes:
-      - ./db/pgdata/:/var/lib/postgresql/data/
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-      
-  proxy:
-    image: jwilder/nginx-proxy:alpine
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./proxy/vhost.d/:/etc/nginx/vhost.d/:ro
-      - ./proxy/certs/:/etc/nginx/certs/:ro
-      - proxy-html:/usr/share/nginx/html/:ro
-      - static:/var/www/static/:ro
-    labels:
-      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+      - pgdata:/var/lib/postgresql/data/
+    networks:
+      - internal
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
 
-  certbot:
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    restart: always
+  broker:
+    image: rabbitmq:3-alpine
+    restart: unless-stopped
     environment:
-      - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL:?err}
-      # proxy should be discovered by label but it does not seem to work
-      - NGINX_PROXY_CONTAINER=renamer_proxy_1
+      - RABBITMQ_DEFAULT_USER=guest
+    networks:
+      - internal
+      
+  nginx:
+    image: jwilder/nginx-proxy:alpine
+    restart: unless-stopped
+    labels:
+      # use traefik proxy
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy-net"
+      # create router for our host
+      - "traefik.http.routers.imageadmin.rule=Host(`${VIRTUAL_HOST:?err}`) && PathPrefix(`/imageadmin`)"
+      # use TLS
+      - "traefik.http.routers.imageadmin.entrypoints=https"
+      - "traefik.http.routers.imageadmin.tls=true"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./proxy/vhost.d/:/etc/nginx/vhost.d/
-      - ./proxy/certs/:/etc/nginx/certs/
-      - proxy-html:/usr/share/nginx/html/
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./proxy/vhost.d/:/etc/nginx/vhost.d/:ro
+      - static:/var/www/imageadmin/static/:ro
+    networks:
+      - internal
+      - proxy-net
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
-      
+
 volumes:
   static:
   proxy-html:
+  pgdata:
+
+networks:
+  internal:
+  proxy-net:
+    name: proxy-net
+    external: true

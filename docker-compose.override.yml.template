@@ -3,13 +3,47 @@ version: '3'
 services:
   webapp:
     ## map base directory for images (see also *_LOCATION in .env)
+    ## REPLACE WITH REAL DIRECTORY!
     volumes:
-      - ${PWD}/test-data/tusi:/tusi
-    ## enable direct access to Django on port 8000
-    ports:
-      - "8000:8000"
+      - ./test-data/tusi:/tusi
+    ## DEBUG: enable direct access to Django on port 8000
+#    ports:
+#      - "8000:8000"
 
-## disable certbot
+  ## run Nginx instead with letsencrypt certificates instead of traefik
+#  nginx:
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    volumes:
+#      - ./proxy/certs/:/etc/nginx/certs/:ro
+#      - proxy-html:/usr/share/nginx/html/:ro
+#    labels:
+#      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
 #  certbot:
-#    image: tianon/true
-#    restart: "no"
+#    image: jrcs/letsencrypt-nginx-proxy-companion
+#    restart: unless-stopped
+#    environment:
+#      - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL:?err}
+#      # proxy should be discovered by label but it does not seem to work
+#      - NGINX_PROXY_CONTAINER=renamer_proxy_1
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock:ro
+#      - ./proxy/vhost.d/:/etc/nginx/vhost.d/
+#      - ./proxy/certs/:/etc/nginx/certs/
+#      - proxy-html:/usr/share/nginx/html/
+#    logging:
+#      driver: json-file
+#      options:
+#        max-size: "10m"
+#        max-file: "3"
+      
+
+volumes:
+  ## keep postgres data in local directory
+  pgdata:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./data/pgdata
+      o: bind

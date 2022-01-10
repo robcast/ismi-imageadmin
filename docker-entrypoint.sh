@@ -1,11 +1,21 @@
 #!/bin/bash
 
-RUNUSER="${RUN_AS_USER:-1000}"
-RUNGROUP="${RUN_AS_GROUP:-1000}"
-RUN="chroot --userspec=$RUNUSER:$RUNGROUP --skip-chdir /"
+until pg_isready --host db; do
+    echo 'Waiting for PostgreSQL to become available...'
+    sleep 1
+done
+echo 'PostgreSQL is available'
 
-# start celery
-$RUN python manage.py celery worker --logfile=$APP_TMPDIR/renamer-worker.log --loglevel=INFO --time-limit=3600 --concurrency=2 &
+# create user for celery worker
+addgroup --gid "${RUN_AS_GROUP:-1000}" worker
+adduser --system --uid "${RUN_AS_USER:-1000}" --gid "${RUN_AS_GROUP:-1000}" --disabled-password worker
+# start celery worker
+celery -A renamer worker --uid worker --logfile=$APP_TMPDIR/renamer-worker.log --loglevel="${RUN_LOG_LEVEL:-INFO}" --time-limit=3600 --concurrency=2 &
 
-# start Django
-exec gunicorn --user=$RUNUSER --bind=:8000 --timeout=420 --log-file=- --log-level=DEBUG renamer.wsgi:application
+if [ "${RUN_MODE}" == "development" ] ; then
+    # Django dev server
+    exec python manage.py runserver 0:8000
+else
+    # start Django
+    exec gunicorn --user=worker --bind=:8000 --timeout=420 --log-file=- --log-level=DEBUG renamer.wsgi:application
+fi

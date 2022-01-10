@@ -26,10 +26,10 @@ import sys
 import json
 from optparse import OptionParser
 
-from celery import task
+from celery import shared_task
 
 
-@task(ignore_result=True)
+@shared_task(ignore_result=True)
 def generate_json(indir, outdir):
     gen = GenerateJson(indir, outdir)
     res = gen.generate()
@@ -43,14 +43,14 @@ class GenerateJson(object):
         self.title = os.path.basename(self.input_directory)
 
     def generate(self):
-        self.__generate()
+        self._generate()
         return True
 
-    def __generate(self):
+    def _generate(self):
         img_dir = self.input_directory
 
         files = os.listdir(img_dir)
-        files.sort(key=self.__alphanum_key)  # sort alphabetical, not asciibetical
+        files.sort(key=self._alphanum_key)  # sort alphabetical, not asciibetical
         lowest_max_zoom = 0
         zoomlevels = []
         images = []
@@ -61,13 +61,13 @@ class GenerateJson(object):
                 continue    # ignore hidden files
 
             if ext in ('.jp2', '.jpx'):
-                width, height = self.__img_size_jp2(os.path.join(img_dir, f))
+                width, height = self._img_size_jp2(os.path.join(img_dir, f))
             elif ext in ('.tiff', '.tif'):
-                width, height = self.__img_size_tiff(os.path.join(img_dir, f))
+                width, height = self._img_size_tiff(os.path.join(img_dir, f))
             else:
                 continue    # ignore anything else.
 
-            max_zoom = self.__get_max_zoom_level(width, height)
+            max_zoom = self._get_max_zoom_level(width, height)
             im = {
                 'mx_w': width,
                 'mx_h': height,
@@ -94,8 +94,8 @@ class GenerateJson(object):
             page_data = []
 
             for j in xrange(lowest_max_zoom + 1):
-                h = self.__incorporate_zoom(im['mx_h'], lowest_max_zoom - j)
-                w = self.__incorporate_zoom(im['mx_w'], lowest_max_zoom - j)
+                h = self._incorporate_zoom(im['mx_h'], lowest_max_zoom - j)
+                w = self._incorporate_zoom(im['mx_w'], lowest_max_zoom - j)
                 c = int(math.ceil(w / 256.))
                 r = int(math.ceil(h / 256.))
                 page_data.append({
@@ -149,7 +149,7 @@ class GenerateJson(object):
         json.dump(data, f)
         f.close()
 
-    def __img_size_jp2(self, fn):
+    def _img_size_jp2(self, fn):
         # we implement our own header reader since all the existing
         # JPEG2000 libraries seem to read the entire image in, and they're
         # just tooooo sloooowww.
@@ -163,7 +163,7 @@ class GenerateJson(object):
         f.close()
         return (width, height)
 
-    def __img_size_tiff(self, fn):
+    def _img_size_tiff(self, fn):
         # We can use the VIPS module here for TIFF, since it can handle all the
         # ins and outs of the TIFF image format quite nicely.
 
@@ -178,25 +178,25 @@ class GenerateJson(object):
         del im
         return size
 
-    def __get_max_zoom_level(self, width, height):
+    def _get_max_zoom_level(self, width, height):
         largest_dim = max(width, height)
         zoom_levels = math.ceil(math.log((largest_dim + 1) / float(256 + 1), 2))
         return int(zoom_levels)
 
-    def __incorporate_zoom(self, img_dim, zoom_diff):
+    def _incorporate_zoom(self, img_dim, zoom_diff):
         return img_dim / float(2 ** zoom_diff)
 
-    def __tryint(self, s):
+    def _tryint(self, s):
         try:
             return int(s)
         except:
             return s
 
-    def __alphanum_key(self, s):
+    def _alphanum_key(self, s):
         """ Turn a string into a list of string and number chunks.
             "z23a" -> ["z", 23, "a"]
         """
-        return [self.__tryint(c) for c in re.split('([0-9]+)', s)]
+        return [self._tryint(c) for c in re.split('([0-9]+)', s)]
 
 
 if __name__ == "__main__":
