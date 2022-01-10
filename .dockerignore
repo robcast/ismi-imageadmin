@@ -1,4 +1,3 @@
-test-data/
 docker-compose.yml
 Dockerfile
 proxy/
