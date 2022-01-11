@@ -9,7 +9,6 @@ services:
       - broker
     environment:
       - VIRTUAL_HOST=${VIRTUAL_HOST:?err}
-      - LETSENCRYPT_HOST=${VIRTUAL_HOST:?err}
       - RUN_AS_USER=${RUN_AS_USER:-1000}
       - RUN_AS_GROUP=${RUN_AS_GROUP:-1000}
       - APP_SECRET_KEY=${APP_SECRET_KEY:?err}
@@ -59,7 +58,7 @@ services:
       - internal
       
   nginx:
-    image: jwilder/nginx-proxy:alpine
+    image: nginx:stable-alpine
     restart: unless-stopped
     labels:
       # use traefik proxy
@@ -71,8 +70,7 @@ services:
       - "traefik.http.routers.imageadmin.entrypoints=https"
       - "traefik.http.routers.imageadmin.tls=true"
     volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./proxy/vhost.d/:/etc/nginx/vhost.d/:ro
+      - ./proxy/nginx/templates/:/etc/nginx/templates/:ro
       - static:/var/www/imageadmin/static/:ro
     networks:
       - internal

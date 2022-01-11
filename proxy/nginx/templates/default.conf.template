@@ -1,0 +1,32 @@
+server {
+    listen       80;
+    listen  [::]:80;
+    
+    server_name  ${VIRTUAL_HOST};
+
+    #access_log  /var/log/nginx/host.access.log  main;    
+
+    # add CORS header to all responses
+    #add_header Access-Control-Allow-Origin "*";
+
+    # map Django running on gunicorn in webapp container
+    location /imageadmin/ {
+        proxy_http_version 1.1;
+        proxy_buffering off;
+        proxy_set_header Connection close;
+        proxy_set_header Host $http_host;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        # wait longer for Django
+        proxy_read_timeout 120s;
+        
+        proxy_pass http://webapp:8000/imageadmin/;
+    }
+    
+    # map Django static directory
+    location /imageadmin/static/ {
+        root /var/www/;
+    }    
+    
+}
+    
