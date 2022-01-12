@@ -83,7 +83,6 @@ services:
 
 volumes:
   static:
-  proxy-html:
   pgdata:
 
 networks:
