@@ -20,6 +20,8 @@ services:
       - APP_TMPDIR=${APP_TMPDIR:?err}
       - IIIF_IMAGE_BASE_URL=${IIIF_IMAGE_BASE_URL:?err}
       - IIIF_MANIF_BASE_URL=${IIIF_MANIF_BASE_URL:?err}
+      - IIIF_LOGIN_URL=${IIIF_LOGIN_URL}
+      - IIIF_TOKEN_URL=${IIIF_TOKEN_URL}
       - DB_POSTGRES_PW=${DB_POSTGRES_PW:?err}
       - RUN_MODE=${RUN_MODE:-production}
       - RUN_LOG_LEVEL=${RUN_LOG_LEVEL:-INFO}

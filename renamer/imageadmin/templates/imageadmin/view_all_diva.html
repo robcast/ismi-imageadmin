@@ -16,7 +16,7 @@
       {% for fn in diva_dirs %}
       <tr>
         <td>{{ fn }}</td>
-        <td><a href="{% url 'view_diva' fn %}">View in Diva</a></td>
+        <td><a href="{% url 'view_diva' fn %}" target="_blank">View in Diva</a></td>
       </tr>
       {% endfor %}
     </tbody>
