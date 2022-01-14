@@ -5,7 +5,8 @@ from . import views
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('manage/', views.manage, name='manage'),
+    path('view_all_diva/', views.view_all_diva, name='view_all_diva'),
+    path('view_diva/<str:document_id>', views.view_diva, name='view_diva'),
     path('show_to_archive/', views.show_to_archive, name='show_to_archive'),
     path('show_to_diva/', views.show_to_diva, name='show_to_diva'),
     path('show_diva_redo/', views.show_diva_redo, name='show_diva_redo'),

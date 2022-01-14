@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block html_head %}
+
+  <script src="{% static 'imageadmin/divajs/diva.js' %}"></script>
+  <script src="{% static 'imageadmin/divajs/plugins/simple-auth.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'imageadmin/divajs/diva.css' %}" />
+
+{% endblock %}
+
+{% block content %}
+
+  <legend>View IIIF Presentation</legend>
+  <span class="help-block">This is the Diva.js online presentation of {{ diva_dir }}</span>
+
+  <div id="diva-wrapper">
+  </div>
+
+  <script>
+      document.addEventListener('DOMContentLoaded', function () {
+          diva = new Diva('diva-wrapper', {
+              plugins: [Diva.SimpleAuthPlugin],
+              simpleAuthTokenUrl: '{{ auth_token_url }}',
+              simpleAuthLoginUrl: '{{ auth_login_url }}',
+              imageCrossOrigin: null,
+              showNonPagedPages: true,
+              objectData: '{{ manifest_url }}'
+          });
+      }, false);
+  </script>
+  
+{% endblock %}

@@ -40,26 +40,28 @@ def home(request):
 
 
 @login_required
-def manage(request):
-    archive_dirs = list_directory(settings.ARCHIVE_LOCATION)
-    incoming_dirs = list_directory(settings.INCOMING_LOCATION)
+def view_all_diva(request):
     diva_dirs = list_directory(settings.DIVA_LOCATION)
-
-    incoming_to_archive = check_difference(incoming_dirs, archive_dirs)
-    archive_to_diva = check_difference(archive_dirs, diva_dirs)
-    diva_redo = check_intersection(archive_dirs, diva_dirs)
-
-    incoming_to_archive.sort(key=alphanum_key)
-    archive_to_diva.sort(key=alphanum_key)
-    diva_redo.sort(key=alphanum_key)
+    diva_dirs.sort(key=alphanum_key)
 
     data = {
-        'to_archive': incoming_to_archive,
-        'to_diva': archive_to_diva,
-        'diva_redo': diva_redo
+        'diva_dirs': diva_dirs
     }
 
-    return render(request, 'imageadmin/manage.html', data)
+    return render(request, 'imageadmin/view_all_diva.html', data)
+
+
+@login_required
+def view_diva(request, document_id):
+
+    data = {
+        'diva_dir': document_id,
+        'manifest_url': settings.IIIF_MANIF_BASE_URL + '/' + document_id + '.json',
+        'auth_token_url': settings.IIIF_TOKEN_URL,
+        'auth_login_url': settings.IIIF_LOGIN_URL,
+    }
+
+    return render(request, 'imageadmin/view_diva.html', data)
 
 
 @login_required

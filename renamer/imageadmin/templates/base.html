@@ -17,6 +17,8 @@
       }
     </style>
     <link href="{% static 'imageadmin/css/bootstrap-responsive.min.css' %}" rel="stylesheet">
+    {% block html_head %}
+    {% endblock %}
   </head>
 
   <body>
@@ -33,10 +35,10 @@
           <div class="nav-collapse collapse">
             <ul class="nav">
               <li><a href="{% url 'home' %}">Status</a></li>
-              <!-- <li><a href="{% url 'manage' %}">Manage</a></li> -->
               <li><a href="{% url 'show_to_archive' %}">Archive</a></li>             
               <li><a href="{% url 'show_to_diva' %}">Presentation</a></li>             
               <li><a href="{% url 'show_diva_redo' %}">Re-do Presentation</a></li>             
+              <li><a href="{% url 'view_all_diva' %}">View Presentation</a></li>             
             </ul>
           </div><!--/.nav-collapse -->
         </div>
