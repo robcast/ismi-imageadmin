@@ -7,31 +7,51 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 
-from imageadmin.helpers.directoryinfo import list_directory, check_difference, check_intersection, alphanum_key
+from imageadmin.models import Directory
+from imageadmin.helpers.directory_cache import scan_directory
+from imageadmin.helpers.directoryinfo import check_difference, check_intersection, alphanum_key
 from imageadmin.helpers.to_archive import move_to_archive
 from imageadmin.helpers.to_diva import convert_to_diva
 from imageadmin.forms import LoginForm
 
 
+
+def _scan_incoming():
+    return scan_directory(settings.INCOMING_LOCATION)
+
+def _scan_archive():
+    return scan_directory(settings.ARCHIVE_LOCATION, '.work_in_progress')
+
+def _scan_diva():
+    return scan_directory(settings.DIVA_LOCATION, '.diva_conversion_in_progress')
+
+def _list_dir_names(path):
+    """ 
+    list names of all direntries of the directory at path
+    """
+    return list(Directory.objects.get(path=path)
+                .direntry_set.all()
+                .values_list('name', flat=True))
+
+
 @login_required
 def home(request):
-    archive_dirs = list_directory(settings.ARCHIVE_LOCATION)
-    diva_dirs = list_directory(settings.DIVA_LOCATION)
-
-    logging.debug("scanning archive directories...")
-    archive_in_progress = []
-    for d in archive_dirs:
-        full_path = os.path.join(settings.ARCHIVE_LOCATION, d)
-        if os.path.exists(os.path.join(full_path, '.work_in_progress')):
-            archive_in_progress.append(d)
-
-    logging.debug("scanning diva directories...")
-    diva_in_progress = []
-    for d in diva_dirs:
-        full_path = os.path.join(settings.DIVA_LOCATION, d)
-        if os.path.exists(os.path.join(full_path, '.diva_conversion_in_progress')):
-            diva_in_progress.append(d)
-
+    """
+    show lists of in-progress archive and diva directories
+    """
+    # check archive location
+    _scan_archive()
+    # list names of all in_progress direntries
+    archive_in_progress = list(Directory.objects.get(path=settings.ARCHIVE_LOCATION)
+                               .direntry_set.filter(in_progress=True)
+                               .values_list('name', flat=True))
+    # check diva location
+    _scan_diva()
+    # list names of all in_progress direntries
+    diva_in_progress = list(Directory.objects.get(path=settings.DIVA_LOCATION)
+                            .direntry_set.filter(in_progress=True)
+                            .values_list('name', flat=True))
+    
     data = {
         'archive_in_progress': archive_in_progress,
         'diva_in_progress': diva_in_progress
@@ -39,9 +59,14 @@ def home(request):
     return render(request, 'imageadmin/home.html', data)
 
 
+
 @login_required
 def view_all_diva(request):
-    diva_dirs = list_directory(settings.DIVA_LOCATION)
+    """
+    show a list of all diva directories
+    """
+    _scan_diva()
+    diva_dirs = _list_dir_names(settings.DIVA_LOCATION)
     diva_dirs.sort(key=alphanum_key)
 
     data = {
@@ -53,7 +78,9 @@ def view_all_diva(request):
 
 @login_required
 def view_diva(request, document_id):
-
+    """
+    show one diva directory using Diva.js
+    """
     data = {
         'diva_dir': document_id,
         'manifest_url': settings.IIIF_MANIF_BASE_URL + '/' + document_id + '.json',
@@ -66,8 +93,13 @@ def view_diva(request, document_id):
 
 @login_required
 def show_to_archive(request):
-    archive_dirs = list_directory(settings.ARCHIVE_LOCATION)
-    incoming_dirs = list_directory(settings.INCOMING_LOCATION)
+    """
+    show a select list of all incoming directories that are not in archive
+    """
+    _scan_archive()
+    archive_dirs = _list_dir_names(settings.ARCHIVE_LOCATION)
+    _scan_incoming()
+    incoming_dirs = _list_dir_names(settings.ARCHIVE_LOCATION)
 
     incoming_to_archive = check_difference(incoming_dirs, archive_dirs)
     incoming_to_archive.sort(key=alphanum_key)
@@ -81,8 +113,13 @@ def show_to_archive(request):
 
 @login_required
 def show_to_diva(request):
-    archive_dirs = list_directory(settings.ARCHIVE_LOCATION)
-    diva_dirs = list_directory(settings.DIVA_LOCATION)
+    """
+    show a select list of all archive directories that are not in diva
+    """
+    _scan_archive()
+    archive_dirs = _list_dir_names(settings.ARCHIVE_LOCATION)
+    _scan_diva()
+    diva_dirs = _list_dir_names(settings.DIVA_LOCATION)
 
     archive_to_diva = check_difference(archive_dirs, diva_dirs)
     archive_to_diva.sort(key=alphanum_key)
@@ -96,8 +133,13 @@ def show_to_diva(request):
 
 @login_required
 def show_diva_redo(request):
-    archive_dirs = list_directory(settings.ARCHIVE_LOCATION)
-    diva_dirs = list_directory(settings.DIVA_LOCATION)
+    """
+    show a select list of all archive directories that are in diva
+    """
+    _scan_archive()
+    archive_dirs = _list_dir_names(settings.ARCHIVE_LOCATION)
+    _scan_diva()
+    diva_dirs = _list_dir_names(settings.DIVA_LOCATION)
 
     diva_redo = check_intersection(archive_dirs, diva_dirs)
     diva_redo.sort(key=alphanum_key)

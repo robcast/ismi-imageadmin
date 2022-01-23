@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 from pathlib import Path
 import os
+import datetime
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,6 +24,20 @@ SECRET_KEY = os.environ["APP_SECRET_KEY"]
 DEBUG = True
 
 ALLOWED_HOSTS = [os.environ["VIRTUAL_HOST"], "localhost"]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}
 
 # Application definition
 
@@ -146,12 +161,14 @@ DATA_LOCATION = os.environ['DATA_LOCATION']
 BACKUP_LOCATION = os.environ['BACKUP_LOCATION']
 TMPDIR = os.environ['APP_TMPDIR']
 
-
 PATH_TO_GS = "/usr/bin/gs"
 PATH_TO_GM = "/usr/bin/gm"
 #PATH_TO_VIPS = "/usr/bin/vips"
 PATH_TO_SHASUM = "/usr/bin/shasum"
 PATH_TO_KDU = "/usr/local/bin/kdu_compress"
+
+# timeout before filesystem re-scan
+DIR_CACHE_TIMEOUT = datetime.timedelta(minutes=2)
 
 # IIIF-Presentation manifests
 IIIF_MANIF_BASE_URL = os.environ['IIIF_MANIF_BASE_URL']
