@@ -153,6 +153,9 @@ def show_diva_redo(request):
 
 @login_required
 def to_archive(request):
+    """
+    start archive jobs for submitted directories
+    """
     filenames = request.POST.getlist('to_archive_chk')
     absolute_filenames = [os.path.join(settings.INCOMING_LOCATION, f) for f in filenames]
     for f in absolute_filenames:
@@ -163,6 +166,9 @@ def to_archive(request):
 
 @login_required
 def to_diva(request):
+    """
+    start diva conversion jobs for submitted directories
+    """
     filenames = request.POST.getlist('to_diva_chk')
     absolute_filenames = [os.path.join(settings.ARCHIVE_LOCATION, f) for f in filenames]
     for f in absolute_filenames:
@@ -173,6 +179,9 @@ def to_diva(request):
 
 @login_required
 def diva_redo(request):
+    """
+    start diva re-generation jobs for submitted directories
+    """
     filenames = request.POST.getlist('redo_diva_chk')
     old_filenames = [os.path.join(settings.DIVA_LOCATION, f) for f in filenames]
     archive_filenames = [os.path.join(settings.ARCHIVE_LOCATION, f) for f in filenames]
