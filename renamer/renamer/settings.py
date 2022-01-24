@@ -122,7 +122,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LOGIN_URL = 'login/'
+LOGIN_URL = '/imageadmin/login/'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
@@ -139,7 +139,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'imageadmin/static/'
+STATIC_URL = '/imageadmin/static/'
 STATIC_ROOT = '/webapp/renamer/static'
 
 # Default primary key field type
