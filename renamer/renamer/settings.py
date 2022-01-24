@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ["APP_SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = (os.environ.get('RUN_MODE', 'production') == 'development')
 
 ALLOWED_HOSTS = [os.environ["VIRTUAL_HOST"], "localhost"]
 

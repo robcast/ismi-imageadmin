@@ -12,6 +12,9 @@ adduser --system --uid "${RUN_AS_USER:-1000}" --gid "${RUN_AS_GROUP:-1000}" --di
 # start celery worker
 celery -A renamer worker --uid worker --logfile=$APP_TMPDIR/renamer-worker.log --loglevel="${RUN_LOG_LEVEL:-INFO}" --time-limit=3600 --concurrency=2 &
 
+python manage.py migrate
+python manage.py collectstatic --noinput
+
 if [ "${RUN_MODE}" == "development" ] ; then
     # Django dev server
     exec python manage.py runserver 0:8000
