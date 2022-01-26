@@ -64,6 +64,7 @@ enable additional debug messages. Do not use these settings in production!
 ## Notes 
 
 To re-generate all IIIF manifests you can run the generate_iiif_json.py script manually:
+
 ```
-docker-compose exec webapp python renamer/helpers/generate_iiif_json.py -r /data/image-presentation/data7/srv/images /data/image-presentation/data7/srv/data
+docker-compose exec webapp python imageadmin/helpers/generate_iiif_json.py -r /data/image-presentation/data7/srv/images /data/image-presentation/data7/srv/data
 ```
