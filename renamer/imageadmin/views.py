@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 
+from renamer.celery import app as celery_app
 from imageadmin.models import Directory
 from imageadmin.helpers.directory_cache import scan_directory
 from imageadmin.helpers.directoryinfo import check_difference, check_intersection, alphanum_key
@@ -62,9 +63,21 @@ def home(request):
                             .direntry_set.filter(in_progress=True)
                             .values_list('name', flat=True))
     
+    # list celery tasks
+    workers = celery_app.control.inspect()
+    celery_registered = [t for t in workers.registered().values() if t]
+    logging.debug(f"registered tasks: {celery_registered}")
+    celery_active = [t for t in workers.active().values() if t]
+    logging.debug(f"active tasks: {celery_active}")
+    celery_scheduled = [t for t in workers.scheduled().values() if t]
+    logging.debug(f"scheduled tasks: {celery_scheduled}")
+    
     data = {
         'archive_in_progress': archive_in_progress,
-        'diva_in_progress': diva_in_progress
+        'diva_in_progress': diva_in_progress,
+        'celery_registered': celery_registered,
+        'celery_active': celery_active,
+        'celery_scheduled': celery_scheduled
     }
     return render(request, 'imageadmin/home.html', data)
 
@@ -225,7 +238,7 @@ def user_login(request):
                 else:
                     return redirect('home')
             else:
-                return redirect('user_login')
+                return redirect('login')
 
 
 def user_logout(request):

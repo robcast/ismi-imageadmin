@@ -48,6 +48,30 @@
 </div>
 {% endif %}
 
+<h3>Processing jobs</h3>
+{% if celery_active %}
+<table class="table table-condensed table-bordered">
+    <thead>
+        <tr>
+            <th>Running</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for w_j in celery_active %}
+        {% for j in w_j %}
+        <tr class="warning">
+            <td>{{ j.name }} {{ j.args }}</td>
+        </tr>
+        {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-success">
+    <p>No processing jobs</p>
+</div>
+{% endif %}
+
 <script type="text/javascript">
   $(document).ready(function () {
     function refreshPage() {
