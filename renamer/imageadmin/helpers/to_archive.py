@@ -164,7 +164,7 @@ def _process_pdfs(fnames, pgimg_path, backup_path):
         fname_pattern = "{0}-%04d.png".format(os.path.splitext(f)[0])
         infname = os.path.join(pgimg_path, f)
         outfname = os.path.join(pgimg_path, fname_pattern)
-        loggin.debug("Converting PDF %s to PNG %s"%(infname, outfname))
+        logging.debug("Converting PDF %s to PNG %s"%(infname, outfname))
         subprocess.run([settings.PATH_TO_GS,
                         "-dNOPAUSE",
                         "-q",

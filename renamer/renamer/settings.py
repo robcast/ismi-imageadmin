@@ -168,7 +168,7 @@ PATH_TO_SHASUM = "/usr/bin/shasum"
 PATH_TO_KDU = "/usr/local/bin/kdu_compress"
 
 # timeout before filesystem re-scan
-DIR_CACHE_TIMEOUT = datetime.timedelta(minutes=1)
+DIR_CACHE_TIMEOUT = datetime.timedelta(seconds=30)
 
 # IIIF-Presentation manifests
 IIIF_MANIF_BASE_URL = os.environ['IIIF_MANIF_BASE_URL']
