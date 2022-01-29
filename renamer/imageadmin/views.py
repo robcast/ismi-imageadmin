@@ -25,11 +25,21 @@ def _scan_archive():
 def _scan_diva():
     return scan_directory(settings.DIVA_LOCATION, '.diva_conversion_in_progress')
 
-def _list_dir_names(path):
-    """ 
-    list names of all direntries of the directory at path
-    """
-    return list(Directory.objects.get(path=path)
+def _list_incoming():
+    _scan_incoming()
+    return list(Directory.objects.get(path=settings.INCOMING_LOCATION)
+                .direntry_set.all()
+                .values_list('name', flat=True))
+
+def _list_archive():
+    _scan_archive()
+    return list(Directory.objects.get(path=settings.ARCHIVE_LOCATION)
+                .direntry_set.all()
+                .values_list('name', flat=True))
+
+def _list_diva():
+    _scan_diva()
+    return list(Directory.objects.get(path=settings.DIVA_LOCATION)
                 .direntry_set.all()
                 .values_list('name', flat=True))
 
@@ -65,8 +75,7 @@ def view_all_diva(request):
     """
     show a list of all diva directories
     """
-    _scan_diva()
-    diva_dirs = _list_dir_names(settings.DIVA_LOCATION)
+    diva_dirs = _list_diva()
     diva_dirs.sort(key=alphanum_key)
 
     data = {
@@ -96,10 +105,8 @@ def show_to_archive(request):
     """
     show a select list of all incoming directories that are not in archive
     """
-    _scan_archive()
-    archive_dirs = _list_dir_names(settings.ARCHIVE_LOCATION)
-    _scan_incoming()
-    incoming_dirs = _list_dir_names(settings.ARCHIVE_LOCATION)
+    archive_dirs = _list_archive()
+    incoming_dirs = _list_incoming()
 
     incoming_to_archive = check_difference(incoming_dirs, archive_dirs)
     incoming_to_archive.sort(key=alphanum_key)
@@ -116,10 +123,8 @@ def show_to_diva(request):
     """
     show a select list of all archive directories that are not in diva
     """
-    _scan_archive()
-    archive_dirs = _list_dir_names(settings.ARCHIVE_LOCATION)
-    _scan_diva()
-    diva_dirs = _list_dir_names(settings.DIVA_LOCATION)
+    archive_dirs = _list_archive()
+    diva_dirs = _list_diva()
 
     archive_to_diva = check_difference(archive_dirs, diva_dirs)
     archive_to_diva.sort(key=alphanum_key)
@@ -136,10 +141,8 @@ def show_diva_redo(request):
     """
     show a select list of all archive directories that are in diva
     """
-    _scan_archive()
-    archive_dirs = _list_dir_names(settings.ARCHIVE_LOCATION)
-    _scan_diva()
-    diva_dirs = _list_dir_names(settings.DIVA_LOCATION)
+    archive_dirs = _list_archive()
+    diva_dirs = _list_diva()
 
     diva_redo = check_intersection(archive_dirs, diva_dirs)
     diva_redo.sort(key=alphanum_key)
