@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Status Page</h2>
+
+<h3>Finished job result</h3>
+{% if celery_result %}
+<table class="table table-condensed table-bordered">
+    <thead>
+        <tr>
+            <th>Status</th><th>Job</th><th>Parameters</th><th>Id</th><th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ celery_result.status }}</td>
+            <td>{{ celery_result.task_name }}</td>
+            <td>{{ celery_result.task_args }}</td>
+            <td>{{ celery_result.task_id }}</td>
+            <td>{{ celery_result.date_done }}</td>
+        </tr>
+        <tr>
+            <td colspan="5"><pre>{{ celery_result.str_result }}</pre></td>
+        </tr>
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-success">
+    <p>No job results</p>
+</div>
+{% endif %}
+
+{% endblock %}

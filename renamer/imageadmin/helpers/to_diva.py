@@ -3,18 +3,22 @@ import tempfile
 import subprocess
 import shutil
 import logging
+import io
 from celery import shared_task
 from django.conf import settings
 from imageadmin.helpers.directoryinfo import alphanum_key
 from imageadmin.helpers.generate_iiif_json import generate_json
 
 
-valid_extensions = [".pdf", ".zip", ".jpg", ".jpeg", ".tif", ".tiff", ".JPG", ".JPEG", ".TIF", ".TIFF", ".PDF", '.png', '.PNG']
+VALID_EXTENSIONS = [".pdf", ".zip", ".jpg", ".jpeg", ".tif", ".tiff", ".JPG", ".JPEG", ".TIF", ".TIFF", ".PDF", '.png', '.PNG']
 
-
-@shared_task(ignore_result=True)
+@shared_task(ignore_result=False)
 def convert_to_diva(indir):
-    logging.debug(f"starting convert to diva for {indir}")
+    # create logger that logs to string that can be returned by celery
+    logger, log_string = _create_string_logger('imageadmin.helpers.convert_to_diva')
+
+    logger.debug(f"starting convert to diva for {indir}")
+    
     outdir = settings.DIVA_LOCATION
     pgimg_path = os.path.join(indir, 'pageimg')
     ms_name = os.path.basename(indir)
@@ -37,8 +41,8 @@ def convert_to_diva(indir):
         # We'll take the safe route and convert all files, TIFF or not.
         tfile = os.path.join(tdir, "{0}.tiff".format(name))
 
-        logging.debug("convert input file: {0}".format(image))
-        logging.debug("convert output file: {0}".format(tfile))
+        logger.debug("convert input file: {0}".format(image))
+        logger.debug("convert output file: {0}".format(tfile))
 
         subprocess.run([settings.PATH_TO_GM,
                         "convert",
@@ -53,8 +57,8 @@ def convert_to_diva(indir):
 
         output_file = os.path.join(out_path, "{0}.jp2".format(name))
 
-        logging.debug("kdu input file: {0}".format(tfile))
-        logging.debug("kdu output file: {0}".format(output_file))
+        logger.debug("kdu input file: {0}".format(tfile))
+        logger.debug("kdu output file: {0}".format(output_file))
 
         result = subprocess.run([settings.PATH_TO_KDU,
                                     "-i", tfile,
@@ -72,11 +76,11 @@ def convert_to_diva(indir):
 
         retcode = result.returncode
         if retcode == 0:
-            logging.debug("kdu generated {0}. Returned with code {1}. Continuing.".format(output_file, retcode))
+            logger.debug("kdu generated {0}. Returned with code {1}. Continuing.".format(output_file, retcode))
 
         else:
             # an encoding problem
-            logging.debug("kdu ERROR code {1} on file {0}.".format(output_file, retcode))
+            logger.debug("kdu ERROR code {1} on file {0}.".format(output_file, retcode))
             # get image info
             result = subprocess.run([settings.PATH_TO_GM,
                                      "identify",
@@ -88,7 +92,7 @@ def convert_to_diva(indir):
             info = result.stdout
             if info is not None and 'JPEG-Colorspace-Name: GRAYSCALE' in info.decode(errors='ignore'):
                 # process using sLUM colorspace for grayscale
-                logging.debug(" kdu converting {0} as sLUM.".format(output_file,))
+                logger.debug(" kdu converting {0} as sLUM.".format(output_file,))
                 result = subprocess.run([settings.PATH_TO_KDU,
                                          "-i", tfile,
                                          "-o", output_file,
@@ -106,7 +110,7 @@ def convert_to_diva(indir):
 
             else:
                 # process using sRGB colorspace for color
-                logging.debug("kdu converting {0} as sRGB.".format(output_file,))
+                logger.debug("kdu converting {0} as sRGB.".format(output_file,))
                 result = subprocess.run([settings.PATH_TO_KDU,
                                          "-i", tfile,
                                          "-o", output_file,
@@ -123,17 +127,19 @@ def convert_to_diva(indir):
                                          "-jp2_space", "sRGB"])
                 
             if result.returncode == 0:
-                logging.debug("kdu re-generated {0}. Returned with code {1}. Continuing.".format(output_file, result.returncode))
+                logger.debug("kdu re-generated {0}. Returned with code {1}. Continuing.".format(output_file, result.returncode))
             else:
-                logging.error("kdu tried to re-generate {0}. Returned with code {1}. Continuing.".format(output_file, result.returncode))
+                logger.error("kdu tried to re-generate {0}. Returned with code {1}. Continuing.".format(output_file, result.returncode))
             
     shutil.rmtree(tdir)
     os.remove(os.path.join(out_path, ".diva_conversion_in_progress"))
 
-    logging.debug(f"Generating JSON in {out_path}")
+    logger.debug(f"Generating JSON in {out_path}")
     generate_json.delay(out_path, settings.DATA_LOCATION)
 
-    return True
+    log_contents = log_string.getvalue()
+    log_string.close()
+    return log_contents
 
 
 def _filter_fnames(fname):
@@ -141,6 +147,15 @@ def _filter_fnames(fname):
         return False
     if fname == "Thumbs.db":
         return False
-    if os.path.splitext(fname)[-1].lower() not in valid_extensions:
+    if os.path.splitext(fname)[-1].lower() not in VALID_EXTENSIONS:
         return False
     return True
+
+def _create_string_logger(logname):
+    logger = logging.getLogger(logname)
+    logger.setLevel(logging.DEBUG)
+    log_string = io.StringIO()
+    sh = logging.StreamHandler(log_string)
+    #sh.setLevel(logging.DEBUG)
+    logger.addHandler(sh)
+    return logger, log_string

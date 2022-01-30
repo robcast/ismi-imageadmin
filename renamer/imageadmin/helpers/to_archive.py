@@ -9,6 +9,7 @@ import hashlib
 import zipfile
 import subprocess
 import logging
+import io
 from django.conf import settings
 from imageadmin.helpers.directoryinfo import alphanum_key
 
@@ -18,16 +19,17 @@ RE_spaces = r"[\s]+"
 RE_underscores = r"[_]+"
 
 
-@shared_task(ignore_result=True)
+@shared_task(ignore_result=False)
 def move_to_archive(incoming_directory):
-    logging.debug(f"starting move to archive {incoming_directory}")
+    # create logger that logs to string that can be returned by celery
+    logger, log_string = _create_string_logger('imageadmin.helpers.move_to_archive')
+    
+    logger.debug(f"starting move to archive {incoming_directory}")
     incoming_directory = incoming_directory.rstrip("/")
     archive_directory = settings.ARCHIVE_LOCATION
     if not os.path.exists(os.path.join(incoming_directory, "pageimg")):
-        f = open(os.path.join(incoming_directory, '.rename_failed'), 'w')
-        f.close()
-        current_task.update_state(state=states.FAILURE)
-        return False
+        logger.error(f"Missing 'pageimg' directory in {incoming_directory}. Aborting.")
+        raise RuntimeError(f"Missing 'pageimg' directory in {incoming_directory}.")
 
     basedir = os.path.split(incoming_directory)
     new_msdir = _clean_dirname(basedir[-1])
@@ -46,7 +48,7 @@ def move_to_archive(incoming_directory):
     all_extensions = set([os.path.splitext(f)[-1].lower() for f in fnames])
 
     if ".zip" in all_extensions:
-        logging.debug(f"unpacking ZIP files in {incoming_directory}")
+        logger.debug(f"unpacking ZIP files in {incoming_directory}")
         if not os.path.exists(full_backup_path):
             os.mkdir(full_backup_path)
 
@@ -63,7 +65,7 @@ def move_to_archive(incoming_directory):
                 zipf.close()
             except:
                 # zipfile open failed. Pass along a message and fail the task.
-                logging.error(f"unpacking ZIP file failed: {infname}")
+                logger.error(f"unpacking ZIP file failed: {infname}")
                 current_task.update_state(state=states.FAILURE)
                 return False
 
@@ -74,13 +76,13 @@ def move_to_archive(incoming_directory):
 
     all_extensions = set([os.path.splitext(f)[-1].lower() for f in fnames])
     if ".pdf" in all_extensions:
-        logging.debug(f"unpacking PDF files in {incoming_directory}")
+        logger.debug(f"unpacking PDF files in {incoming_directory}")
         # process pdf files
         try:
-            fnames = _process_pdfs(fnames, full_pgimg_path, full_backup_path)
+            fnames = _process_pdfs(fnames, full_pgimg_path, full_backup_path, logger)
         except:
             # pdf convert failed. Pass along a message and fail the task.
-            logging.exception(f"processing PDFs failed!")
+            logger.exception(f"processing PDFs failed!")
             current_task.update_state(state=states.FAILURE)
             return False
 
@@ -98,7 +100,7 @@ def move_to_archive(incoming_directory):
     imgs.sort(key=alphanum_key)
     pimg = [f for f in imgs if _filter_fnames(f)]
 
-    logging.debug(f"creating checksums in {incoming_directory}")
+    logger.debug(f"creating checksums in {incoming_directory}")
     for f in pimg:
         csum = _csum_file(os.path.join(full_pgimg_path, f))
         fname = os.path.relpath(os.path.join(full_pgimg_path, f), full_ms_path)
@@ -114,18 +116,21 @@ def move_to_archive(incoming_directory):
             sh.write("{0} {1}\n".format(csum, fname))
     sh.close()
 
-    _fix_permissions(full_ms_path)
+    _fix_permissions(full_ms_path, logger)
     
-    logging.debug(f"move to archive done for {incoming_directory}")
+    logger.debug(f"move to archive done for {incoming_directory}")
     os.remove(os.path.join(full_ms_path, '.work_in_progress'))
 
     f = open(os.path.join(full_ms_path, '.rename_done'), 'w')
     f.close()
 
     # move the incoming directory to a backup directory
+    logger.debug(f"moving {incoming_directory} to backup {settings.BACKUP_LOCATION}")
     shutil.move(incoming_directory, settings.BACKUP_LOCATION)
 
-    return True
+    log_contents = log_string.getvalue()
+    log_string.close()
+    return log_contents
 
 
 def _filter_fnames(fname):
@@ -156,7 +161,7 @@ def _clean_dirname(msdir):
     return newdir
 
 
-def _process_pdfs(fnames, pgimg_path, backup_path):
+def _process_pdfs(fnames, pgimg_path, backup_path, logger):
     for f in fnames:
         if os.path.splitext(f)[-1] != ".pdf":
             continue
@@ -164,7 +169,7 @@ def _process_pdfs(fnames, pgimg_path, backup_path):
         fname_pattern = "{0}-%04d.png".format(os.path.splitext(f)[0])
         infname = os.path.join(pgimg_path, f)
         outfname = os.path.join(pgimg_path, fname_pattern)
-        logging.debug("Converting PDF %s to PNG %s"%(infname, outfname))
+        logger.debug("Converting PDF %s to PNG %s"%(infname, outfname))
         subprocess.run([settings.PATH_TO_GS,
                         "-dNOPAUSE",
                         "-q",
@@ -186,12 +191,12 @@ def _process_pdfs(fnames, pgimg_path, backup_path):
     return files
 
 
-def _fix_permissions(dirpath, fperm='a+r', dperm='a+rx'):
+def _fix_permissions(dirpath, logger, fperm='a+r', dperm='a+rx'):
     """
     walks dirpath and changes all file permissions to fperm and all directories to dperm.
     permissions are set by system chmod.
     """
-    logging.debug(f"fixing permissions in directory {dirpath}")
+    logger.debug(f"fixing permissions in directory {dirpath}")
     # change all files
     subprocess.run(["/usr/bin/find",
                     dirpath,
@@ -204,3 +209,12 @@ def _fix_permissions(dirpath, fperm='a+r', dperm='a+rx'):
                     "-type", "d",
                     "-exec", "chmod", dperm, "{}", ";"],
                     check=True)    
+
+def _create_string_logger(logname):
+    logger = logging.getLogger(logname)
+    logger.setLevel(logging.DEBUG)
+    log_string = io.StringIO()
+    sh = logging.StreamHandler(log_string)
+    sh.setLevel(logging.DEBUG)
+    logger.addHandler(sh)
+    return logger, log_string

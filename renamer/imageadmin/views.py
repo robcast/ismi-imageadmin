@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 
 from renamer.celery import app as celery_app
+from django_celery_results.models import TaskResult
 from imageadmin.models import Directory
 from imageadmin.helpers.directory_cache import scan_directory
 from imageadmin.helpers.directoryinfo import check_difference, check_intersection, alphanum_key
@@ -63,7 +64,7 @@ def home(request):
                             .direntry_set.filter(in_progress=True)
                             .values_list('name', flat=True))
     
-    # list celery tasks
+    # list running celery tasks
     workers = celery_app.control.inspect()
     celery_registered = [t for t in workers.registered().values() if t]
     logging.debug(f"registered tasks: {celery_registered}")
@@ -72,14 +73,35 @@ def home(request):
     celery_scheduled = [t for t in workers.scheduled().values() if t]
     logging.debug(f"scheduled tasks: {celery_scheduled}")
     
+    # list completed task results
+    celery_results = TaskResult.objects.values()
+    
     data = {
         'archive_in_progress': archive_in_progress,
         'diva_in_progress': diva_in_progress,
-        'celery_registered': celery_registered,
         'celery_active': celery_active,
-        'celery_scheduled': celery_scheduled
+        'celery_results': celery_results
     }
     return render(request, 'imageadmin/home.html', data)
+
+
+@login_required
+def view_task_result(request, task_id):
+    """
+    show one celery task result
+    """
+    # list completed task results
+    celery_result = TaskResult.objects.filter(task_id=task_id).values()
+    if celery_result:
+        celery_result = celery_result[0]
+        logging.debug(f"celery_result: {repr(celery_result)}")
+        celery_result['str_result'] = celery_result['result'].strip('"').replace('\\n', '\n')
+        
+    data = {
+        'celery_result': celery_result
+    }
+
+    return render(request, 'imageadmin/view_task_result.html', data)
 
 
 

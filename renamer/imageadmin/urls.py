@@ -15,4 +15,5 @@ urlpatterns = [
     path('to_archive/', views.to_archive, name='toarchive'),
     path('to_diva/', views.to_diva, name='todiva'),
     path('diva_redo/', views.diva_redo, name='divaredo'),
+    path('view_task_result/<str:task_id>', views.view_task_result, name='view_task_result'),
 ]

@@ -25,6 +25,7 @@ import math
 import sys
 import json
 import logging
+import io
 try:
     from django.conf import settings
 except:
@@ -33,12 +34,19 @@ except:
 from celery import shared_task
 
 
-@shared_task(ignore_result=True)
+@shared_task(ignore_result=False)
 def generate_json(indir, outdir):
-    logging.debug(f"Starting generate IIIF JSON on {indir} to {outdir}")
+    # create logger that logs to string that can be returned by celery
+    logger, log_string = _create_string_logger('imageadmin.helpers.generate_json')
+
+    logger.debug(f"Starting generate IIIF JSON on {indir} to {outdir}")
     gen = GenerateIiifJson(indir, outdir)
     res = gen.generate()
-    logging.debug("Generate JSON finished with: {0}".format(res))
+    logger.debug("Generate JSON finished with: {0}".format(res))
+    
+    log_contents = log_string.getvalue()
+    log_string.close()
+    return log_contents
 
 
 class GenerateIiifJson(object):
@@ -191,6 +199,16 @@ class GenerateIiifJson(object):
             "z23a" -> ["z", 23, "a"]
         """
         return [self._tryint(c) for c in re.split('([0-9]+)', s)]
+
+
+def _create_string_logger(logname):
+    logger = logging.getLogger(logname)
+    logger.setLevel(logging.DEBUG)
+    log_string = io.StringIO()
+    sh = logging.StreamHandler(log_string)
+    #sh.setLevel(logging.DEBUG)
+    logger.addHandler(sh)
+    return logger, log_string
 
 
 if __name__ == "__main__":

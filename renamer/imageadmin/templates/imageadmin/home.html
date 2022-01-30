@@ -48,21 +48,47 @@
 </div>
 {% endif %}
 
-<h3>Processing jobs</h3>
+<h3>Running jobs</h3>
 {% if celery_active %}
 <table class="table table-condensed table-bordered">
     <thead>
         <tr>
-            <th>Running</th>
+            <th>Job</th><th>Parameters</th>
         </tr>
     </thead>
     <tbody>
         {% for w_j in celery_active %}
         {% for j in w_j %}
         <tr class="warning">
-            <td>{{ j.name }} {{ j.args }}</td>
+            <td>{{ j.name }}</td><td>{{ j.args }}</td>
         </tr>
         {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-success">
+    <p>No processing jobs</p>
+</div>
+{% endif %}
+
+<h3>Finished jobs</h3>
+{% if celery_results %}
+<table class="table table-condensed table-bordered">
+    <thead>
+        <tr>
+            <th>Status</th><th>Job</th><th>Parameters</th><th>Id</th><th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for res in celery_results %}
+        <tr>
+            <td>{{ res.status }}</td>
+            <td>{{ res.task_name }}</td>
+            <td>{{ res.task_args }}</td>
+            <td><a href="{% url 'view_task_result' res.task_id %}">{{ res.task_id }}</a></td>
+            <td>{{ res.date_done }}</td>
+        </tr>
         {% endfor %}
     </tbody>
 </table>
