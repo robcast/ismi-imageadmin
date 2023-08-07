@@ -7,6 +7,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('view_all_diva/', views.view_all_diva, name='view_all_diva'),
     path('view_diva/<str:document_id>', views.view_diva, name='view_diva'),
+    path('view_ext_diva/<path:manifest_url>', views.view_ext_diva, name='view_ext_diva'),
     path('view_ext_diva/', views.view_ext_diva, name='view_ext_diva'),
     path('show_to_archive/', views.show_to_archive, name='show_to_archive'),
     path('show_to_diva/', views.show_to_diva, name='show_to_diva'),

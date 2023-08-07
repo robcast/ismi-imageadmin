@@ -1,6 +1,7 @@
 import os
 import logging
 import shutil
+import re
 
 from django.shortcuts import render, redirect
 from django.conf import settings
@@ -135,11 +136,20 @@ def view_diva(request, document_id):
     return render(request, 'imageadmin/view_diva.html', data)
 
 
-def view_ext_diva(request):
+def view_ext_diva(request, manifest_url=None):
     """
     show external iiif manifest using Diva.js
     """
-    manifest_url = request.GET.get('url')
+    if manifest_url is None:
+        manifest_url = request.GET.get('url')
+        
+    # fix munged protocol part
+    proto_match = re.match(r'(https?)://?(.+)', manifest_url)
+    if proto_match:
+        manifest_url = proto_match.group(1) + '://' + proto_match.group(2)
+    else:
+        manifest_url = 'https://' + manifest_url
+        
     data = {
         'manifest_url': manifest_url
     }
