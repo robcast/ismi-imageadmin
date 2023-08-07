@@ -135,6 +135,17 @@ def view_diva(request, document_id):
     return render(request, 'imageadmin/view_diva.html', data)
 
 
+def view_ext_diva(request, manifest_url):
+    """
+    show external iiif manifest using Diva.js
+    """
+    data = {
+        'manifest_url': manifest_url
+    }
+
+    return render(request, 'imageadmin/view_ext_diva.html', data)
+
+
 @login_required
 def show_to_archive(request):
     """
