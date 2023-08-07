@@ -135,10 +135,11 @@ def view_diva(request, document_id):
     return render(request, 'imageadmin/view_diva.html', data)
 
 
-def view_ext_diva(request, manifest_url):
+def view_ext_diva(request):
     """
     show external iiif manifest using Diva.js
     """
+    manifest_url = request.GET.get('url')
     data = {
         'manifest_url': manifest_url
     }
