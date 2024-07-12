@@ -121,7 +121,6 @@ def view_all_diva(request):
     return render(request, 'imageadmin/view_all_diva.html', data)
 
 
-@login_required
 def view_diva(request, document_id):
     """
     show one diva directory using Diva.js
