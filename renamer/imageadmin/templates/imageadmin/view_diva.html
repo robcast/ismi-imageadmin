@@ -5,6 +5,7 @@
 
   <script src="{% static 'imageadmin/divajs/diva.js' %}"></script>
   <script src="{% static 'imageadmin/divajs/plugins/simple-auth.js' %}"></script>
+  <script src="{% static 'imageadmin/divajs/plugins/download.js' %}"></script>
   <link rel="stylesheet" href="{% static 'imageadmin/divajs/diva.css' %}" />
 
 {% endblock %}
@@ -20,7 +21,7 @@
   <script>
       document.addEventListener('DOMContentLoaded', function () {
           diva = new Diva('diva-wrapper', {
-              plugins: [Diva.SimpleAuthPlugin],
+              plugins: [Diva.SimpleAuthPlugin, Diva.DownloadPlugin],
               simpleAuthTokenUrl: '{{ auth_token_url }}',
               simpleAuthLoginUrl: '{{ auth_login_url }}',
               imageCrossOrigin: null,
